@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import DishCard from '../components/DishCard';
-import { getMenuItems, ApiMenuItem } from '../services/api';
+import { getMenuItems, ApiMenuItem, getRooms, ApiRoom, API_BASE_ORIGIN } from '../services/api';
 import { Dish, DishCategory } from '../types';
-
-import { API_BASE_ORIGIN } from '../services/api';
+import RoomCard from '../components/RoomCard';
 
 // Helper to get full image URL
 const getFullUrl = (url: string | undefined): string => {
@@ -30,12 +29,13 @@ const apiToDish = (item: ApiMenuItem): Dish => ({
 const HomePage: React.FC = () => {
   const [featured, setFeatured] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rooms, setRooms] = useState<ApiRoom[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(true);
 
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
         const items = await getMenuItems();
-        // Lấy 3 món đầu tiên làm featured
         const dishes = items.slice(0, 3).map(apiToDish);
         setFeatured(dishes);
       } catch (err) {
@@ -47,6 +47,20 @@ const HomePage: React.FC = () => {
     fetchFeatured();
   }, []);
 
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const data = await getRooms();
+        setRooms(data);
+      } catch (err) {
+        console.error('Error fetching rooms:', err);
+      } finally {
+        setLoadingRooms(false);
+      }
+    };
+    fetchRooms();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -54,14 +68,11 @@ const HomePage: React.FC = () => {
         <div 
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-                // Sử dụng hình ảnh Cầu Rồng Đà Nẵng về đêm với tông màu Vàng/Đen chủ đạo
                 backgroundImage: 'url("https://images.unsplash.com/photo-1676656799516-56f87426839c?q=80&w=1920&auto=format&fit=crop")',
             }}
         >
-             {/* Darker overlay to make text pop against the bright bridge lights */}
              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30"></div>
         </div>
-
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
           <span className="block text-primary text-lg md:text-xl font-medium tracking-[0.2em] mb-4 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight animate-fadeInUp drop-shadow-2xl" style={{animationDelay: '0.2s'}}>
@@ -105,6 +116,40 @@ const HomePage: React.FC = () => {
           </div>
       </section>
 
+      {/* Sơ Đồ Quán & Phòng */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <span className="text-primary font-bold tracking-wider text-sm">KHÔNG GIAN</span>
+              <h2 className="text-4xl font-serif font-bold text-dark mt-2">Sơ Đồ Quán & Phòng</h2>
+            </div>
+          </div>
+          {loadingRooms ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <>
+              <h3 className="text-2xl font-bold mb-4 text-primary">Phòng VIP</h3>
+              <div className="grid md:grid-cols-3 gap-8 mb-12">
+                {rooms.filter(r => r.room_type === 'private').map(room => (
+                  <RoomCard key={room.id} room={room} />
+                ))}
+                {rooms.filter(r => r.room_type === 'private').length === 0 && <div className="text-gray-400 italic">Chưa có phòng VIP</div>}
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-primary">Bàn Ngoài Trời</h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                {rooms.filter(r => r.room_type === 'outdoor').map(room => (
+                  <RoomCard key={room.id} room={room} />
+                ))}
+                {rooms.filter(r => r.room_type === 'outdoor').length === 0 && <div className="text-gray-400 italic">Chưa có bàn ngoài trời</div>}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
       {/* Featured Menu Teaser */}
       <section className="py-20 bg-white">
           <div className="container mx-auto px-4">
@@ -124,7 +169,7 @@ const HomePage: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-3 gap-8">
-                    {featured.map(dish => <DishCard key={dish.id} dish={dish} />)}
+                    {featured.map(dish => <DishCard key={dish.id} dish={dish} showAddToCart={false} />)}
                 </div>
               )}
 

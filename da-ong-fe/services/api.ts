@@ -1,8 +1,8 @@
 // API Service for Đá & Ong Restaurant
 
-export const API_BASE_URL = 'http://localhost:3011/api/v1';
-export const API_BASE_ORIGIN = API_BASE_URL.replace(/\/api\/v1$/, '');
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3010/api/v1';
+export const API_BASE_ORIGIN = API_BASE_URL.replace(/\/api\/v1$/, '');
 // Types from API
 export interface ApiCategory {
   id: number;
@@ -110,7 +110,7 @@ export interface ApiBooking {
 }
 
 // Helper function for API calls
-async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
+async function apiCall<T>(endpoint: string, options?: RequestInit, retryCount = 0): Promise<T> {
   const { headers, ...restOptions } = options || {};
   const isAdminApi = endpoint.startsWith('/admin') || endpoint.startsWith('/auth/me');
   // Nếu là API admin mà không có token thì redirect luôn
@@ -121,30 +121,54 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
       throw new Error('Unauthorized');
     }
   }
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...restOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-  });
 
-  if (response.status === 401 && isAdminApi) {
-    window.location.href = '/admin/login';
-    throw new Error('Unauthorized');
+  const maxRetries = 3;
+  const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...restOptions,
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    });
+
+    if (response.status === 401 && isAdminApi) {
+      window.location.href = '/admin/login';
+      throw new Error('Unauthorized');
+    }
+
+    if (!response.ok) {
+      // Handle rate limiting
+      if (response.status === 429 && retryCount < maxRetries) {
+        console.warn(`Rate limited, retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return apiCall(endpoint, options, retryCount + 1);
+      }
+
+      // Handle server errors with retry
+      if (response.status >= 500 && retryCount < maxRetries) {
+        console.warn(`Server error ${response.status}, retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return apiCall(endpoint, options, retryCount + 1);
+      }
+
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || error.errors?.join(', ') || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    // Retry network errors
+    if ((error instanceof TypeError || error.message.includes('fetch')) && retryCount < maxRetries) {
+      console.warn(`Network error, retrying in ${retryDelay}ms...`, error);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return apiCall(endpoint, options, retryCount + 1);
+    }
+
+    throw error;
   }
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || error.errors?.join(', ') || 'API Error');
-  }
-
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
 }
 
 // Helper function for file upload API calls (multipart/form-data)
@@ -194,7 +218,13 @@ export const getDailySpecials = (today?: boolean) => {
 export const getDailySpecial = (id: number) => apiCall<ApiDailySpecial>(`/daily_specials/${id}`);
 
 // Rooms
-export const getRooms = () => apiCall<ApiRoom[]>('/rooms');
+export const getRooms = (date?: string, time?: string) => {
+  const params = new URLSearchParams();
+  if (date) params.append('date', date);
+  if (time) params.append('time', time);
+  const query = params.toString();
+  return apiCall<ApiRoom[]>(`/rooms${query ? `?${query}` : ''}`);
+};
 export const getRoom = (id: number) => apiCall<ApiRoom>(`/rooms/${id}`);
 
 // Contacts

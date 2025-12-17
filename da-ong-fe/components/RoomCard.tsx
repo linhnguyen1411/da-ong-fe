@@ -1,0 +1,31 @@
+import React from 'react';
+import { ApiRoom } from '../services/api';
+
+interface RoomCardProps {
+  room: ApiRoom;
+}
+
+const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+  return (
+    <div className="rounded-lg shadow-lg bg-white p-4 flex flex-col items-center border border-gray-100">
+      <img
+        src={room.thumbnail_url || room.images_urls?.[0] || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400'}
+        alt={room.name}
+        className="w-full h-40 object-cover rounded-md mb-3"
+      />
+      <h3 className="text-xl font-bold mb-1 text-dark text-center">{room.name}</h3>
+      <div className="text-gray-600 text-sm mb-2 text-center">{room.description}</div>
+      <div className="flex flex-wrap gap-2 justify-center text-xs mb-2">
+        <span className="bg-primary/10 text-primary px-2 py-1 rounded">{room.room_type === 'private' ? 'Phòng VIP' : 'Bàn ngoài trời'}</span>
+        <span className="bg-gray-100 px-2 py-1 rounded">Sức chứa: {room.capacity}</span>
+        {room.has_karaoke && <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Karaoke</span>}
+        {room.has_projector && <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">Projector</span>}
+        {room.has_sound_system && <span className="bg-green-100 text-green-700 px-2 py-1 rounded">Âm thanh</span>}
+      </div>
+      <div className="font-semibold text-primary text-lg mb-1">{room.price_per_hour} / giờ</div>
+      <div className="text-xs text-gray-400">Trạng thái: {room.status === 'available' ? 'Còn trống' : room.status === 'occupied' ? 'Đã đặt' : 'Bảo trì'}</div>
+    </div>
+  );
+};
+
+export default RoomCard;

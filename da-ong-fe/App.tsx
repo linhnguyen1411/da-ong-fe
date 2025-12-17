@@ -19,6 +19,7 @@ import AdminRooms from './pages/admin/AdminRooms';
 import AdminBestSellers from './pages/admin/AdminBestSellers';
 import AdminDailySpecials from './pages/admin/AdminDailySpecials';
 import { BookingProvider } from './contexts/BookingContext';
+import CartFloatingButton from './components/CartFloatingButton';
 
 const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -36,6 +37,7 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
     <Header />
     <main className="flex-grow">{children}</main>
     <Footer />
+    <CartFloatingButton />
   </div>
 );
 

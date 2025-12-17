@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { BookingState, Room, DishCategory } from '../types';
-import { MENU_ITEMS } from '../data';
+import { ROOMS, MENU_ITEMS } from '../data';
 import { ChevronRight, ChevronLeft, Users, Volume2, Info, Loader2, CheckCircle, Utensils, Wine } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useBookingCart } from '../contexts/BookingContext';
-import { createBookingApi, getRooms, getMenuItems, checkAvailability, ApiRoom, ApiMenuItem } from '../services/api';
+import { createBookingApi, getRooms, getMenuItems, ApiRoom, ApiMenuItem } from '../services/api';
 import { SelectedDishesSummary } from '../components/SelectedDishesSummary';
 
 import { API_BASE_ORIGIN } from '../services/api';
@@ -18,8 +18,6 @@ const BookingPage: React.FC = () => {
     // State cho API data và UI
     const [apiRooms, setApiRooms] = useState<ApiRoom[]>([]);
     const [apiMenuItems, setApiMenuItems] = useState<ApiMenuItem[]>([]);
-    const [loadingRooms, setLoadingRooms] = useState(true);
-    const [roomsError, setRoomsError] = useState<string | null>(null);
     const [activeMenuTab, setActiveMenuTab] = useState<'FOOD' | 'DRINK'>('FOOD');
     const [showRoomModal, setShowRoomModal] = useState<Room | null>(null);
     const [modalImageIndex, setModalImageIndex] = useState(0);
@@ -114,7 +112,7 @@ const BookingPage: React.FC = () => {
     if (apiRooms.length > 0) {
       // Sort by position first
       const sortedRooms = [...apiRooms].sort((a, b) => (a.position || 0) - (b.position || 0));
-
+      
       return sortedRooms.map(r => {
         // Build amenities list from API fields
         const amenities: string[] = [];
@@ -122,10 +120,7 @@ const BookingPage: React.FC = () => {
         if (r.has_projector) amenities.push('Máy chiếu');
         if (r.has_karaoke) amenities.push('Karaoke');
         if (r.capacity >= 20) amenities.push('Phòng lớn');
-
-        // Rooms returned from API are already filtered by availability
-        const isActuallyAvailable = true;
-
+        
         return {
           id: r.id.toString(),
           name: r.name,
@@ -135,13 +130,13 @@ const BookingPage: React.FC = () => {
           image: getImageUrl(r.thumbnail_url || r.images_urls?.[0]),
           images: (r.images_urls || []).map(url => getImageUrl(url)),
           description: r.description || '',
-          isAvailable: isActuallyAvailable,
+          isAvailable: r.status === 'available',
           surcharge: 0,
           amenities: amenities.length > 0 ? amenities : ['Điều hòa', 'Wifi']
         };
       }) as Room[];
     }
-    return []; // No fallback to static data - rooms must come from database
+    return ROOMS;
   }, [apiRooms]);
 
   const filteredRooms = useMemo(() => {
@@ -161,58 +156,22 @@ const BookingPage: React.FC = () => {
 
 
   // --- Step 3 Logic: Cart total & Menu Filtering ---
-  // Use API menu items if available, fallback to static, but merge to show all
+  // Use API menu items if available, fallback to static
   const menuItemsToUse = useMemo(() => {
-    const apiItems = apiMenuItems.map(item => ({
-      id: item.id.toString(),
-      name: item.name,
-      price: parseFloat(item.price) || 0,
-      description: item.description || '',
-      image: getImageUrl(item.thumbnail_url || item.image_url || item.images_urls?.[0]),
-      category: (item.category?.name as DishCategory) || DishCategory.MAIN,
-      isBestSeller: item.is_best_seller,
-      isRecommended: item.is_recommended
-    }));
-    // Merge with static MENU_ITEMS, prioritizing API items
-    const merged = [...apiItems];
-    MENU_ITEMS.forEach(item => {
-      if (!merged.find(m => m.id === item.id)) {
-        merged.push(item);
-      }
-    });
-    return merged;
+    if (apiMenuItems.length > 0) {
+      return apiMenuItems.map(item => ({
+        id: item.id.toString(),
+        name: item.name,
+        price: parseFloat(item.price) || 0,
+        description: item.description || '',
+        image: getImageUrl(item.thumbnail_url || item.image_url || item.images_urls?.[0]),
+        category: item.category?.name === 'Đồ uống' ? DishCategory.DRINK : DishCategory.MAIN,
+        isBestSeller: item.is_best_seller,
+        isRecommended: item.is_recommended
+      }));
+    }
+    return MENU_ITEMS;
   }, [apiMenuItems]);
-
-  // Fetch menu items on mount
-  useEffect(() => {
-    const fetchMenuItems = async () => {
-      try {
-        const items = await getMenuItems();
-        setApiMenuItems(items);
-      } catch (error) {
-        console.error('Failed to fetch menu items:', error);
-      }
-    };
-    fetchMenuItems();
-  }, []);
-
-  // Fetch rooms on mount and when date/time changes
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        setLoadingRooms(true);
-        setRoomsError(null);
-        const rooms = await getRooms(booking.date || undefined, booking.time || undefined);
-        setApiRooms(rooms);
-      } catch (error) {
-        console.error('Failed to fetch rooms:', error);
-        setRoomsError('Không thể tải danh sách phòng. Vui lòng thử lại sau.');
-      } finally {
-        setLoadingRooms(false);
-      }
-    };
-    fetchRooms();
-  }, [booking.date, booking.time]);
 
   const cartTotal = useMemo(() => {
     return Object.entries(booking.selectedDishes).reduce((total, [id, qty]) => {
@@ -220,16 +179,6 @@ const BookingPage: React.FC = () => {
         return total + (dish ? dish.price * (qty as number) : 0);
     }, 0);
   }, [booking.selectedDishes, menuItemsToUse]);
-
-  // Merge selectedDishes and cartItems for consistent display
-  const mergedDishes = useMemo(() => {
-    const merged: { [id: string]: number } = { ...booking.selectedDishes };
-    Object.entries(cartItems).forEach(([id, qty]) => {
-      const prev = typeof merged[id] === 'number' ? merged[id] : 0;
-      merged[id] = Math.max(prev, typeof qty === 'number' ? qty : 0);
-    });
-    return merged;
-  }, [booking.selectedDishes, cartItems]);
 
   const currentTabItems = useMemo(() => {
     return menuItemsToUse.filter(item => {
@@ -445,35 +394,7 @@ const BookingPage: React.FC = () => {
         )}
 
         {/* Room List */}
-        {loadingRooms ? (
-          <div className="text-center py-10">
-            <Loader2 className="animate-spin mx-auto mb-4" size={40} />
-            <p className="text-gray-600">Đang tải danh sách phòng...</p>
-          </div>
-        ) : roomsError ? (
-          <div className="text-center py-10 bg-red-50 rounded-lg border border-red-200">
-            <div className="text-red-600 font-bold text-lg mb-2">Lỗi tải dữ liệu</div>
-            <p className="text-red-500">{roomsError}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors"
-            >
-              Thử lại
-            </button>
-          </div>
-        ) : filteredRooms.length === 0 && booking.date && booking.time ? (
-          <div className="text-center py-10 bg-red-50 rounded-lg border border-red-200">
-            <div className="text-red-600 font-bold text-lg mb-2">Hiện tại các phòng đều bận</div>
-            <p className="text-red-500">Vui lòng gọi trực tiếp hotline để được tư vấn và hỗ trợ đặt phòng.</p>
-            <a 
-              href="tel:19001234" 
-              className="inline-block mt-4 bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition-colors"
-            >
-              📞 Gọi ngay: 1900 1234
-            </a>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
             {filteredRooms.map(room => (
                 <div 
                     key={room.id}
@@ -510,10 +431,9 @@ const BookingPage: React.FC = () => {
                     </div>
                 </div>
             ))}
-          </div>
-        )}
+        </div>
 
-        {filteredRooms.length === 0 && (!booking.date || !booking.time) && (
+        {filteredRooms.length === 0 && (
              <div className="text-center py-10 bg-gray-50 rounded-lg text-gray-500">
                 Không tìm thấy phòng phù hợp với số lượng khách và yêu cầu của bạn.
             </div>
@@ -558,7 +478,7 @@ const BookingPage: React.FC = () => {
                 <div key={dish.id} className="flex items-center p-4 border-b last:border-0 hover:bg-gray-50 transition-colors">
                      <input 
                         type="checkbox"
-                        checked={!!mergedDishes[dish.id]}
+                        checked={!!booking.selectedDishes[dish.id]}
                         onChange={(e) => toggleDish(dish.id, e.target.checked)}
                         className="w-5 h-5 text-primary rounded mr-4 bg-white flex-shrink-0"
                      />
@@ -569,10 +489,10 @@ const BookingPage: React.FC = () => {
                          <h4 className="font-bold text-dark truncate">{dish.name}</h4>
                          <p className="text-primary font-bold">{dish.price.toLocaleString()}đ</p>
                      </div>
-                     {mergedDishes[dish.id] && (
+                     {booking.selectedDishes[dish.id] && (
                          <div className="flex items-center gap-3">
                              <button onClick={() => updateDishQty(dish.id, -1)} className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold">-</button>
-                             <span className="font-bold w-4 text-center">{mergedDishes[dish.id]}</span>
+                             <span className="font-bold w-4 text-center">{booking.selectedDishes[dish.id]}</span>
                              <button onClick={() => updateDishQty(dish.id, 1)} className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold">+</button>
                          </div>
                      )}
@@ -719,7 +639,7 @@ const BookingPage: React.FC = () => {
            <div className="flex justify-between pt-6">
             <button onClick={handleBack} className="text-gray-600 font-medium hover:text-dark flex items-center gap-2"><ChevronLeft size={20}/> Quay lại</button>
             <button 
-                disabled={!booking.customerName || !booking.customerPhone || !(booking.selectedRoom && booking.selectedRoom.id) || isSubmitting}
+                disabled={!booking.customerName || !booking.customerPhone || isSubmitting}
                 onClick={handleFinish}
                 className="bg-primary text-dark px-8 py-3 rounded-lg font-bold hover:bg-yellow-500 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >

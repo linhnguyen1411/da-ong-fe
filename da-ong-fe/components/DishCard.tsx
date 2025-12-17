@@ -3,7 +3,7 @@ import { Dish } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useBookingCart } from '../contexts/BookingContext';
 import { CheckCircle, X, ShoppingBag, ArrowRight } from 'lucide-react';
-import ImageGallery from './ImageGallery';
+// Bỏ import ImageGallery
 
 interface DishCardProps {
   dish: Dish;
@@ -33,13 +33,15 @@ const DishCard: React.FC<DishCardProps> = ({ dish, showTags = true, showAddToCar
   return (
     <>
       <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group h-full flex flex-col relative">
-        <div className="relative h-56 overflow-hidden bg-gray-100 flex-shrink-0">
-          <ImageGallery
-            images={dish.images || []}
-            thumbnailUrl={dish.image}
+        <div
+          className="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer"
+          onClick={handleAddToCart}
+        >
+          <img
+            src={dish.image}
             alt={dish.name}
-            className="w-full h-full"
-            showThumbnails={true}
+            className="w-full h-full object-cover object-center transition-transform duration-200 group-hover:scale-105"
+            draggable={false}
           />
           {showTags && (
             <div className="absolute top-2 left-2 flex flex-col gap-2 z-10 pointer-events-none">
@@ -58,21 +60,18 @@ const DishCard: React.FC<DishCardProps> = ({ dish, showTags = true, showAddToCar
         </div>
         <div className="p-5 flex-1 flex flex-col">
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-bold text-gray-800 line-clamp-2">{dish.name}</h3>
+            <h3
+              className="text-lg font-bold text-gray-800 line-clamp-2 cursor-pointer hover:text-primary"
+              onClick={handleAddToCart}
+            >
+              {dish.name}
+            </h3>
             <span className="text-primary font-bold text-lg whitespace-nowrap">
               {dish.price.toLocaleString('vi-VN')}đ
             </span>
           </div>
           <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-1">{dish.description}</p>
-          {showAddToCart && (
-            <button 
-              onClick={handleAddToCart}
-              className="w-full py-2 bg-primary text-dark rounded-lg font-bold hover:bg-yellow-500 transition-colors shadow-md uppercase text-sm flex items-center justify-center gap-2"
-            >
-              <ShoppingBag size={16} />
-              CHỌN MÓN
-            </button>
-          )}
+          {/* Không hiển thị button chọn món ở homepage */}
         </div>
       </div>
 

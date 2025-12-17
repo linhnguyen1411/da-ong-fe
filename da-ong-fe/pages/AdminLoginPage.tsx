@@ -58,7 +58,6 @@ const AdminLoginPage: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                  placeholder="admin@daong.vn"
                 />
               </div>
             </div>
@@ -73,7 +72,6 @@ const AdminLoginPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                  placeholder="••••••••"
                 />
                 <button
                   type="button"
@@ -106,11 +104,6 @@ const AdminLoginPage: React.FC = () => {
               )}
             </button>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p>Tài khoản mặc định:</p>
-            <p className="font-mono mt-1">admin@daong.vn / admin123</p>
-          </div>
         </div>
 
         {/* Back to Home */}
