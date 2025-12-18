@@ -10,7 +10,7 @@ import { SelectedDishesSummary } from '../components/SelectedDishesSummary';
 import { API_BASE_ORIGIN } from '../services/api';
 
 const getImageUrl = (url?: string) => {
-  if (!url) return '/room1.jpg';
+  if (!url) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktow7RuZyBjw7MgaMOsbmgg4bqjbmg8L3RleHQ+PC9zdmc+';
     return url.startsWith('http') ? url : `${API_BASE_ORIGIN}${url}`;
 };
 
@@ -82,6 +82,32 @@ const BookingPage: React.FC = () => {
             note: ''
         };
     });
+
+    // Sync selectedDishes with cartItems when cartItems change
+    useEffect(() => {
+        setBooking(prev => {
+            const newSelectedDishes = { ...prev.selectedDishes };
+            // Add any new items from cartItems
+            Object.entries(cartItems).forEach(([id, qty]) => {
+                if (typeof qty === 'number' && qty > 0) {
+                    newSelectedDishes[id] = qty;
+                }
+            });
+            // Remove items that are no longer in cartItems
+            Object.keys(newSelectedDishes).forEach(id => {
+                if (!cartItems[id] || cartItems[id] <= 0) {
+                    delete newSelectedDishes[id];
+                }
+            });
+            if (JSON.stringify(newSelectedDishes) !== JSON.stringify(prev.selectedDishes)) {
+                const updated = { ...prev, selectedDishes: newSelectedDishes };
+                saveBooking(updated);
+                return updated;
+            }
+            return prev;
+        });
+    }, [cartItems]);
+
     // Helper: lưu booking vào localStorage kèm timestamp
     const saveBooking = (data: BookingState) => {
         localStorage.setItem('pendingBooking', JSON.stringify({ ...data, _ts: Date.now() }));
@@ -92,8 +118,7 @@ const BookingPage: React.FC = () => {
             const next = { ...prev, step: prev.step + 1 };
             saveBooking(next);
             if (prev.step === 2) {
-                const cart = localStorage.getItem('cartItems');
-                const hasDishes = cart && Object.keys(JSON.parse(cart)).length > 0;
+                const hasDishes = Object.keys(mergedDishes).length > 0;
                 if (hasDishes) {
                     saveBooking({ ...prev, step: 4 });
                     return { ...prev, step: 4 };
@@ -287,8 +312,8 @@ const BookingPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-        // Build booking items from selected dishes
-        const bookingItems = Object.entries(booking.selectedDishes).map(([id, qty]) => ({
+        // Build booking items from merged dishes (selectedDishes + cartItems)
+        const bookingItems = Object.entries(mergedDishes).map(([id, qty]) => ({
           menu_item_id: parseInt(id),
           quantity: qty as number,
         }));
