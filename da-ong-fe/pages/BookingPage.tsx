@@ -109,6 +109,21 @@ const BookingPage: React.FC = () => {
         });
     }, [cartItems]);
 
+    // Auto-advance to step 4 when returning from menu with dishes selected
+    useEffect(() => {
+        // Check if coming back from menu or just loaded with pending booking
+        const hasDishes = Object.keys(cartItems).length > 0;
+        const hasRoom = booking.selectedRoom !== null;
+        const isAtStep3OrLess = booking.step <= 3;
+        
+        // If we have both room and dishes selected, and we're not at step 4, go to step 4
+        if (hasDishes && hasRoom && isAtStep3OrLess && !bookingCompleted) {
+            const updatedBooking = { ...booking, step: 4 };
+            setBooking(updatedBooking);
+            saveBooking(updatedBooking);
+        }
+    }, [cartItems, booking.selectedRoom]);
+
     // Helper: lưu booking vào localStorage kèm timestamp
     const saveBooking = (data: BookingState) => {
         // Don't save if booking was completed
@@ -147,24 +162,21 @@ const BookingPage: React.FC = () => {
     
     const hasDishes = Object.keys(currentCartItems).length > 0 || Object.keys(cartItems).length > 0;
     
-    const updatedBooking = {...booking, selectedRoom: room};
-    setBooking(updatedBooking);
-    saveBooking(updatedBooking);
     setShowRoomModal(null);
     setModalImageIndex(0);
     
-    // Auto go to next step after a short delay for visual feedback
-    setTimeout(() => {
-      if (hasDishes) {
-        // Has dishes -> go directly to step 4
-        setBooking(prev => ({ ...prev, step: 4 }));
-        saveBooking({ ...updatedBooking, step: 4 });
-      } else {
-        // No dishes -> go to menu to select
-        saveBooking({ ...updatedBooking, step: 3 });
-        navigate('/menu?fromBooking=1');
-      }
-    }, 300);
+    if (hasDishes) {
+      // Has dishes -> go directly to step 4
+      const updatedBooking = {...booking, selectedRoom: room, step: 4};
+      setBooking(updatedBooking);
+      saveBooking(updatedBooking);
+    } else {
+      // No dishes -> go to menu to select
+      const updatedBooking = {...booking, selectedRoom: room, step: 3};
+      setBooking(updatedBooking);
+      saveBooking(updatedBooking);
+      navigate('/menu?fromBooking=1');
+    }
   };
 
   // --- Step 2 Logic: Filter Rooms ---
