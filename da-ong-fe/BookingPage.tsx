@@ -107,6 +107,20 @@ const BookingPage: React.FC = () => {
   const handleBack = () => setBooking(prev => ({ ...prev, step: prev.step - 1 }));
 
   // --- Step 2 Logic: Filter Rooms ---
+  // Fetch rooms with date when moving to step 2
+  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  
+  useEffect(() => {
+    // Fetch rooms with booking date when on step 2
+    if (booking.step === 2 && booking.date) {
+      setIsLoadingRooms(true);
+      getRooms(booking.date, booking.time || undefined)
+        .then(rooms => setApiRooms(rooms))
+        .catch(err => console.error('Failed to fetch rooms:', err))
+        .finally(() => setIsLoadingRooms(false));
+    }
+  }, [booking.step, booking.date, booking.time]);
+  
   // Convert API rooms to Room format for filtering
   const roomsForFilter = useMemo(() => {
     if (apiRooms.length > 0) {
@@ -121,6 +135,9 @@ const BookingPage: React.FC = () => {
         if (r.has_karaoke) amenities.push('Karaoke');
         if (r.capacity >= 20) amenities.push('Phòng lớn');
         
+        // Room is NOT available if: status is not 'available' OR it's booked for the selected date
+        const isAvailable = r.status === 'available' && !r.booked_for_date;
+        
         return {
           id: r.id.toString(),
           name: r.name,
@@ -130,7 +147,8 @@ const BookingPage: React.FC = () => {
           image: getImageUrl(r.thumbnail_url || r.images_urls?.[0]),
           images: (r.images_urls || []).map(url => getImageUrl(url)),
           description: r.description || '',
-          isAvailable: r.status === 'available',
+          isAvailable: isAvailable,
+          bookedForDate: r.booked_for_date || false, // Keep track of booking status
           surcharge: 0,
           amenities: amenities.length > 0 ? amenities : ['Điều hòa', 'Wifi']
         };
@@ -394,18 +412,39 @@ const BookingPage: React.FC = () => {
         )}
 
         {/* Room List */}
-        <div className="grid md:grid-cols-2 gap-6">
+        {isLoadingRooms ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="animate-spin text-primary" size={40} />
+            <span className="ml-3 text-gray-500">Đang tải danh sách phòng...</span>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
             {filteredRooms.map(room => (
                 <div 
                     key={room.id}
-                    className={`border rounded-xl overflow-hidden cursor-pointer transition-all hover:shadow-lg ${booking.selectedRoom?.id === room.id ? 'ring-2 ring-primary border-transparent' : 'border-gray-200'}`}
-                    onClick={() => setBooking({...booking, selectedRoom: room})}
+                    className={`border rounded-xl overflow-hidden transition-all ${
+                      room.bookedForDate 
+                        ? 'cursor-not-allowed opacity-75' 
+                        : 'cursor-pointer hover:shadow-lg'
+                    } ${booking.selectedRoom?.id === room.id ? 'ring-2 ring-primary border-transparent' : 'border-gray-200'}`}
+                    onClick={() => {
+                      if (!room.bookedForDate && room.isAvailable) {
+                        setBooking({...booking, selectedRoom: room});
+                      }
+                    }}
                 >
                     <div className="relative h-48">
                         <img src={room.image} alt={room.name} className="w-full h-full object-cover" />
-                        {!room.isAvailable && (
+                        {room.bookedForDate && (
                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                <span className="text-white font-bold text-lg uppercase border-2 border-white px-4 py-1">Đã đặt</span>
+                                <span className="text-white font-bold text-lg uppercase border-2 border-red-500 bg-red-500/80 px-4 py-2 rounded">
+                                  Đã có người đặt ngày {booking.date}
+                                </span>
+                            </div>
+                        )}
+                        {!room.bookedForDate && !room.isAvailable && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <span className="text-white font-bold text-lg uppercase border-2 border-white px-4 py-1">Không khả dụng</span>
                             </div>
                         )}
                         <button 
@@ -416,7 +455,12 @@ const BookingPage: React.FC = () => {
                         </button>
                     </div>
                     <div className="p-4">
-                        <h3 className="font-bold text-lg text-dark mb-1">{room.name}</h3>
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-bold text-lg text-dark">{room.name}</h3>
+                          {room.bookedForDate && (
+                            <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-medium">Đã đặt</span>
+                          )}
+                        </div>
                         <div className="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Sức chứa: {room.capacity} khách</span>
                             {room.surcharge > 0 ? (
@@ -431,7 +475,8 @@ const BookingPage: React.FC = () => {
                     </div>
                 </div>
             ))}
-        </div>
+          </div>
+        )}
 
         {filteredRooms.length === 0 && (
              <div className="text-center py-10 bg-gray-50 rounded-lg text-gray-500">
@@ -442,7 +487,7 @@ const BookingPage: React.FC = () => {
         <div className="flex justify-between pt-6">
             <button onClick={handleBack} className="text-gray-600 font-medium hover:text-dark flex items-center gap-2"><ChevronLeft size={20}/> Quay lại</button>
             <button 
-                disabled={!booking.selectedRoom || !booking.selectedRoom.isAvailable}
+                disabled={!booking.selectedRoom || !booking.selectedRoom.isAvailable || booking.selectedRoom.bookedForDate}
                 onClick={handleNext}
                 className="bg-primary text-dark px-8 py-3 rounded-lg font-bold hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >

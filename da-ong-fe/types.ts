@@ -25,6 +25,7 @@ export interface Room {
   hasAudio: boolean;
   type: 'private' | 'outdoor';
   isAvailable: boolean;
+  bookedForDate?: boolean; // true if room has booking on selected date
   image: string;
   images?: string[];  // Multiple images for gallery
   description: string;
