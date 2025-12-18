@@ -136,6 +136,37 @@ const BookingPage: React.FC = () => {
     };
   const handleBack = () => setBooking(prev => ({ ...prev, step: prev.step - 1 }));
 
+  // Handle room selection with auto-advance
+  const handleSelectRoom = (room: Room) => {
+    // Check cart items directly from localStorage for most up-to-date value
+    let currentCartItems = {};
+    try {
+      const stored = localStorage.getItem('cartItems');
+      currentCartItems = stored ? JSON.parse(stored) : {};
+    } catch {}
+    
+    const hasDishes = Object.keys(currentCartItems).length > 0 || Object.keys(cartItems).length > 0;
+    
+    const updatedBooking = {...booking, selectedRoom: room};
+    setBooking(updatedBooking);
+    saveBooking(updatedBooking);
+    setShowRoomModal(null);
+    setModalImageIndex(0);
+    
+    // Auto go to next step after a short delay for visual feedback
+    setTimeout(() => {
+      if (hasDishes) {
+        // Has dishes -> go directly to step 4
+        setBooking(prev => ({ ...prev, step: 4 }));
+        saveBooking({ ...updatedBooking, step: 4 });
+      } else {
+        // No dishes -> go to menu to select
+        saveBooking({ ...updatedBooking, step: 3 });
+        navigate('/menu?fromBooking=1');
+      }
+    }, 300);
+  };
+
   // --- Step 2 Logic: Filter Rooms ---
   // Convert API rooms to Room format for filtering
   const roomsForFilter = useMemo(() => {
@@ -516,21 +547,7 @@ const BookingPage: React.FC = () => {
                     } ${booking.selectedRoom?.id === room.id ? 'ring-2 ring-primary border-transparent' : 'border-gray-200'}`}
                     onClick={() => {
                       if (!room.bookedForDate && room.isAvailable) {
-                        // Auto-advance to next step after selecting room
-                        const updatedBooking = {...booking, selectedRoom: room};
-                        setBooking(updatedBooking);
-                        saveBooking(updatedBooking);
-                        // Auto go to next step
-                        setTimeout(() => {
-                          const hasDishes = Object.keys(mergedDishes).length > 0;
-                          if (hasDishes) {
-                            setBooking(prev => ({ ...prev, step: 4 }));
-                            saveBooking({ ...updatedBooking, step: 4 });
-                          } else {
-                            saveBooking({ ...updatedBooking, step: 3 });
-                            navigate('/menu?fromBooking=1');
-                          }
-                        }, 300);
+                        handleSelectRoom(room);
                       }
                     }}
                 >
@@ -927,11 +944,7 @@ const BookingPage: React.FC = () => {
                       </ul>
 
                       <button 
-                         onClick={() => {
-                             setBooking({...booking, selectedRoom: showRoomModal});
-                             setShowRoomModal(null);
-                             setModalImageIndex(0);
-                         }}
+                         onClick={() => handleSelectRoom(showRoomModal)}
                          className="w-full bg-primary text-dark font-bold py-3 rounded-lg hover:bg-yellow-500 transition"
                       >
                           CHỌN PHÒNG NÀY
