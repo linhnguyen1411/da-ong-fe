@@ -1,0 +1,271 @@
+
+[0;34m╔════════════════════════════════════════════════╗[0m
+[0;34m║    🚀 TimeKeep Pro - VPS Deployment Script     ║[0m
+[0;34m╚════════════════════════════════════════════════╝[0m
+
+[0;34mℹ️  Building frontend locally...[0m
+deploy.sh: line 50: cd: /Users/linhnguyen21/workspace/timekeep-pro: No such file or directory
+
+> timekeep-pro@0.0.0 build
+> vite build
+
+vite v6.4.1 building for production...
+transforming...
+✓ 2325 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  1.14 kB │ gzip:   0.61 kB
+dist/assets/index-i0g62kmd.js  659.60 kB │ gzip: 194.68 kB
+✓ built in 1.37s
+[0;32m✅ Frontend built successfully[0m
+[0;34mℹ️  Checking VPS connectivity...[0m
+[0;32m✅ VPS is reachable[0m
+[0;34mℹ️  Stopping existing processes...[0m
+[0;32m✅ Old processes stopped[0m
+[0;34mℹ️  Updating backend code...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-46-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Dec 10 02:02:04 PM +07 2025
+
+  System load:  0.6689453125       Processes:             101
+  Usage of /:   53.5% of 19.59GB   Users logged in:       1
+  Memory usage: 18%                IPv4 address for eth0: 112.213.87.124
+  Swap usage:   1%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+303 updates can be applied immediately.
+203 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+Saved working directory and index state WIP on main: 971dece feat: Add admin create user feature with authentication and validation
+From github.com:linhnguyen1411/cham-cong-be
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+-bash: line 4: log_success: command not found
+No local changes to save
+From github.com:linhnguyen1411/cham-cong-fe
+ * branch            main       -> FETCH_HEAD
+   fa89e59..5dd3bf6  main       -> origin/main
+Updating fa89e59..5dd3bf6
+Fast-forward
+ deploy.sh | 46 +++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 35 insertions(+), 11 deletions(-)
+[0;32m✅ Backend and frontend code updated[0m
+[0;34mℹ️  Updating Gemfile Ruby version to 3.0.2...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-46-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Dec 10 02:02:04 PM +07 2025
+
+  System load:  0.6689453125       Processes:             101
+  Usage of /:   53.5% of 19.59GB   Users logged in:       1
+  Memory usage: 18%                IPv4 address for eth0: 112.213.87.124
+  Swap usage:   1%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+303 updates can be applied immediately.
+203 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+Bundler 2.5.23 is running, but your lockfile was generated with 2.6.9. Installing Bundler 2.6.9 and restarting using that version.
+Don't run Bundler as root. Installing your bundle as root will break this
+application for all non-root users on this machine.
+Fetching gem metadata from https://rubygems.org/.
+Your lockfile is locked to a version of bundler (2.6.9) that doesn't exist at https://rubygems.org/. Going on using 2.5.23
+Your Ruby version is 3.0.2, but your Gemfile specified 3.2.2
+[0;32m✅ Gemfile updated and bundle installed[0m
+[0;34mℹ️  Deploying frontend to VPS...[0m
+[0;31m❌ Frontend dist folder not found at /Users/linhnguyen21/workspace/timekeep-pro/dist[0m
+[0;34mℹ️  Building frontend locally first...[0m
+deploy.sh: line 98: cd: /Users/linhnguyen21/workspace/timekeep-pro: No such file or directory
+
+> timekeep-pro@0.0.0 build
+> vite build
+
+vite v6.4.1 building for production...
+<script src="/config.js"> in "/index.html" can't be bundled without type="module" attribute
+
+/index.css doesn't exist at build time, it will remain unchanged to be resolved at runtime
+transforming...
+✓ 2325 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  1.14 kB │ gzip:   0.61 kB
+dist/assets/index-i0g62kmd.js  659.60 kB │ gzip: 194.68 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.24s
+[1;33m⚠️  Frontend deploy might have issues[0m
+[0;32m✅ Frontend deployed[0m
+[0;34mℹ️  Copying frontend to nginx root...[0m
+[0;32m✅ Frontend files copied to web root[0m
+[0;34mℹ️  Backend dependencies already installed (via bundle install)[0m
+[0;32m✅ Backend dependencies ready[0m
+[0;34mℹ️  Setting up database credentials...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-46-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Dec 10 02:02:04 PM +07 2025
+
+  System load:  0.6689453125       Processes:             101
+  Usage of /:   53.5% of 19.59GB   Users logged in:       1
+  Memory usage: 18%                IPv4 address for eth0: 112.213.87.124
+  Swap usage:   1%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+303 updates can be applied immediately.
+203 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+[0;32m✅ Database credentials configured[0m
+[0;34mℹ️  Running database migrations...[0m
+[1;33m⚠️  Migrations might have issues (continuing...)[0m
+[0;32m✅ Database migrations completed[0m
+[0;34mℹ️  Creating seed user (admin/password123)...[0m
+[0;32m✅ Seed user created[0m
+[0;34mℹ️  Frontend already built and will be deployed in next step[0m
+[0;32m✅ Frontend ready[0m
+[0;34mℹ️  Starting backend on port 3001 with PM2...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-46-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Dec 10 02:02:04 PM +07 2025
+
+  System load:  0.6689453125       Processes:             101
+  Usage of /:   53.5% of 19.59GB   Users logged in:       1
+  Memory usage: 18%                IPv4 address for eth0: 112.213.87.124
+  Swap usage:   1%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+303 updates can be applied immediately.
+203 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+[PM2] Applying action deleteProcessId on app [all](ids: [ 0 ])
+[PM2] [timekeep-api](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Starting /usr/bin/bash in fork_mode (1 instance)
+[PM2] Done.
+┌────┬─────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name            │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ timekeep-api    │ default     │ N/A     │ fork    │ 967243   │ 0s     │ 0    │ online    │ 0%       │ 652.0kb  │ root     │ disabled │
+└────┴─────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+┌────┬─────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name            │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ timekeep-api    │ default     │ N/A     │ fork    │ 967253   │ 0s     │ 2    │ online    │ 50%      │ 25.1mb   │ root     │ disabled │
+└────┴─────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[0;32m✅ Backend started[0m
+[0;34mℹ️  Reloading Nginx...[0m
+[0;32m✅ Nginx reloaded[0m
+[0;34mℹ️  Setting up Nginx configuration...[0m
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.0-46-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Wed Dec 10 02:02:04 PM +07 2025
+
+  System load:  0.6689453125       Processes:             101
+  Usage of /:   53.5% of 19.59GB   Users logged in:       1
+  Memory usage: 18%                IPv4 address for eth0: 112.213.87.124
+  Swap usage:   1%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+303 updates can be applied immediately.
+203 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[0;32m✅ Nginx configured[0m
+[0;34mℹ️  Waiting for services to start...[0m
+[0;34mℹ️  Testing API...[0m
+[1;33m⚠️  API returned HTTP 000000 (may need more time to start)[0m
+
+[0;32m╔════════════════════════════════════════════════╗[0m
+[0;32m║         ✅ Deployment Completed! ✅            ║[0m
+[0;32m╚════════════════════════════════════════════════╝[0m
+
+[1;33m📊 Access Your Application:[0m
+   🔗 Backend API:   [0;34mhttp://112.213.87.124:3001[0m
+   🌐 Frontend UI:   [0;34mhttp://112.213.87.124:5173[0m
+
+[1;33m📋 Useful Commands:[0m
+   [0;34mssh root@112.213.87.124[0m
+   [0;34mpm2 status[0m                 - Show PM2 status
+   [0;34mpm2 logs timekeep-api[0m      - View logs
+   [0;34mpm2 restart timekeep-api[0m   - Restart backend
+
+[1;33m📖 For more info, check DEPLOY.md[0m
+

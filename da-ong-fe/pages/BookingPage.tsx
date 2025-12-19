@@ -26,6 +26,7 @@ const BookingPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [bookingCompleted, setBookingCompleted] = useState(false); // Flag to prevent re-saving after success
+    const [showDepositModal, setShowDepositModal] = useState(false); // Show deposit payment modal
   const location = useLocation();
   const navigate = useNavigate();
     const { cartItems, clearCart } = useBookingCart();
@@ -355,7 +356,17 @@ const BookingPage: React.FC = () => {
     };
 
   // --- Final Step: Call API ---
-  const handleFinish = async () => {
+  // Show deposit modal when user clicks confirm
+  const handleFinish = () => {
+    if (!booking.customerPhone) {
+      alert("Vui lòng nhập số điện thoại");
+      return;
+    }
+    setShowDepositModal(true);
+  };
+
+  // Actually submit the booking after payment confirmation
+  const handleConfirmPayment = async () => {
     setIsSubmitting(true);
 
     try {
@@ -380,6 +391,7 @@ const BookingPage: React.FC = () => {
         // On Success - Clear all storage
         setBookingCompleted(true); // Set flag FIRST to prevent useEffect from re-saving
         setIsSuccess(true);
+        setShowDepositModal(false);
         clearCart();
         localStorage.removeItem('pendingBooking');
         localStorage.removeItem('cartItems');
@@ -505,7 +517,7 @@ const BookingPage: React.FC = () => {
 
         {/* Audio Option (Private only) */}
         {booking.locationType === 'private' && (
-            <div className="mb-8 flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
+            <div className="mb-4 flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
                 <input 
                     type="checkbox" 
                     id="audio"
@@ -519,7 +531,7 @@ const BookingPage: React.FC = () => {
             </div>
         )}
 
-        {/* Room List */}
+        {/* Room Selection */}
         {loadingRooms ? (
           <div className="text-center py-10">
             <Loader2 className="animate-spin mx-auto mb-4" size={40} />
@@ -721,13 +733,14 @@ const BookingPage: React.FC = () => {
                       />
                   </div>
                    <div>
-                      <label className="block text-gray-700 font-medium mb-2">Số điện thoại</label>
+                      <label className="block text-gray-700 font-medium mb-2">Số điện thoại <span className="text-red-500">*</span></label>
                       <input 
                         type="tel" 
                         value={booking.customerPhone}
                         onChange={(e) => setBooking({...booking, customerPhone: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-gray-900"
                         placeholder="Nhập số điện thoại"
+                        required
                       />
                   </div>
                   <div>
@@ -769,71 +782,36 @@ const BookingPage: React.FC = () => {
                       )}
                   </div>
 
-                                    {/* Merge selectedDishes và cartItems để show đúng tên, số lượng */}
-                                    {/* Merge selectedDishes và cartItems để show đúng tên, số lượng */}
-                                    <SelectedDishesSummary
-                                        selectedDishes={booking.selectedDishes}
-                                        cartItems={cartItems}
-                                        apiMenuItems={apiMenuItems}
-                                    />
+                  <SelectedDishesSummary
+                      selectedDishes={booking.selectedDishes}
+                      cartItems={cartItems}
+                      apiMenuItems={apiMenuItems}
+                  />
 
-                                    <div className="pt-4 border-t border-gray-300 space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                    <span className="font-bold text-lg text-dark">Tổng dự kiến:</span>
-                                                    <span className="font-bold text-2xl text-primary">
-                                                            {(() => {
-                                                                const roomPrice = booking.selectedRoom?.pricePerHour || 0;
-                                                                const totalEstimate = roomPrice + cartTotal;
-                                                                return totalEstimate.toLocaleString('vi-VN') + 'đ';
-                                                            })()}
-                                                    </span>
-                                            </div>
-                                            <p className="text-xs text-gray-500 mt-2 text-center">*Giá chưa bao gồm VAT và đồ uống phát sinh tại quán.</p>
-
-                                            {/* Tổng tiền cọc và QR ngân hàng */}
-                                            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="font-bold text-dark">Số tiền cần thanh toán cọc:</span>
-                                                    <span className="font-bold text-lg text-primary">
-                                                        {(() => {
-                                                            // Tổng cọc = Tiền phòng + 30% tổng món ăn
-                                                            const roomPrice = booking.selectedRoom?.pricePerHour || 0;
-                                                            const foodDeposit = Math.round(cartTotal * 0.3);
-                                                            const deposit = roomPrice + foodDeposit;
-                                                            return deposit.toLocaleString('vi-VN') + 'đ';
-                                                        })()}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col items-center gap-2 mt-2">
-                                                    <img src="/images/qr-bank.jpg" alt="QR chuyển khoản" className="w-40 h-40 object-contain border rounded-lg" />
-                                                    <div className="text-center mt-2">
-                                                        <div className="font-bold text-dark">Ngân hàng: <span className="text-primary">Sacombank</span></div>
-                                                        <div className="font-bold text-dark">Số tài khoản: <span className="text-primary">040905944272</span></div>
-                                                        <div className="text-dark">Chủ TK: <span className="font-semibold">TRẦN THỊ ÁI NHI</span></div>
-                                                    </div>
-                                                </div>
-                                                <p className="text-xs text-gray-500 mt-2 text-center">Vui lòng chuyển khoản cọc để giữ chỗ. Ghi rõ họ tên và số điện thoại khi chuyển khoản.</p>
-                                            </div>
-                                    </div>
+                  <div className="pt-4 border-t border-gray-300 space-y-2">
+                      <div className="flex justify-between items-center">
+                          <span className="font-bold text-lg text-dark">Tổng dự kiến:</span>
+                          <span className="font-bold text-2xl text-primary">
+                              {(() => {
+                                  const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                  const totalEstimate = roomPrice + cartTotal;
+                                  return totalEstimate.toLocaleString('vi-VN') + 'đ';
+                              })()}
+                          </span>
+                      </div>
+                      <p className="text-xs text-gray-500 text-center">*Giá chưa bao gồm VAT và đồ uống phát sinh tại quán.</p>
+                  </div>
               </div>
           </div>
 
            <div className="flex justify-between pt-6">
             <button onClick={handleBack} className="text-gray-600 font-medium hover:text-dark flex items-center gap-2"><ChevronLeft size={20}/> Quay lại</button>
             <button 
-                disabled={!booking.customerName || !booking.customerPhone || !(booking.selectedRoom && booking.selectedRoom.id) || isSubmitting}
+                disabled={!booking.customerPhone || !(booking.selectedRoom && booking.selectedRoom.id)}
                 onClick={handleFinish}
                 className="bg-primary text-dark px-8 py-3 rounded-lg font-bold hover:bg-yellow-500 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-                {isSubmitting ? (
-                    <>
-                        <Loader2 className="animate-spin" size={20} /> ĐANG XỬ LÝ...
-                    </>
-                ) : (
-                    <>
-                         XÁC NHẬN ĐẶT BÀN <ChevronRight size={20} />
-                    </>
-                )}
+                XÁC NHẬN ĐẶT BÀN <ChevronRight size={20} />
             </button>
         </div>
       </div>
@@ -968,6 +946,76 @@ const BookingPage: React.FC = () => {
                       >
                           CHỌN PHÒNG NÀY
                       </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* Deposit Payment Modal */}
+      {showDepositModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-scaleIn">
+                  <div className="bg-primary p-4">
+                      <h3 className="text-xl font-bold text-dark text-center">THANH TOÁN CỌC</h3>
+                  </div>
+                  
+                  <div className="p-6">
+                      {/* Deposit Amount */}
+                      <div className="text-center mb-6">
+                          <p className="text-gray-600 mb-2">Số tiền cần thanh toán cọc:</p>
+                          <p className="text-3xl font-bold text-primary">
+                              {(() => {
+                                  const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                  const foodDeposit = Math.round(cartTotal * 0.3);
+                                  const deposit = roomPrice + foodDeposit;
+                                  return deposit.toLocaleString('vi-VN') + 'đ';
+                              })()}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                              (Tiền phòng {(booking.selectedRoom?.pricePerHour || 0).toLocaleString()}đ + 30% tiền món {Math.round(cartTotal * 0.3).toLocaleString()}đ)
+                          </p>
+                      </div>
+
+                      {/* QR Code */}
+                      <div className="flex flex-col items-center gap-3 p-4 bg-gray-50 rounded-xl mb-6">
+                          <img src="/images/qr-bank.jpg" alt="QR chuyển khoản" className="w-48 h-48 object-contain border rounded-lg bg-white" />
+                          <div className="text-center">
+                              <div className="font-bold text-dark">Ngân hàng: <span className="text-primary">Sacombank</span></div>
+                              <div className="font-bold text-dark">STK: <span className="text-primary">040905944272</span></div>
+                              <div className="text-dark text-sm">Chủ TK: <span className="font-semibold">TRẦN THỊ ÁI NHI</span></div>
+                          </div>
+                      </div>
+
+                      <p className="text-xs text-gray-500 text-center mb-6">
+                          Vui lòng chuyển khoản cọc để giữ chỗ.<br/>
+                          Ghi rõ <strong>họ tên</strong> và <strong>số điện thoại</strong> khi chuyển khoản.
+                      </p>
+
+                      {/* Buttons */}
+                      <div className="space-y-3">
+                          <button 
+                              onClick={handleConfirmPayment}
+                              disabled={isSubmitting}
+                              className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                              {isSubmitting ? (
+                                  <>
+                                      <Loader2 className="animate-spin" size={20} /> ĐANG XỬ LÝ...
+                                  </>
+                              ) : (
+                                  <>
+                                      <CheckCircle size={20} /> ĐÃ THANH TOÁN
+                                  </>
+                              )}
+                          </button>
+                          <button 
+                              onClick={() => setShowDepositModal(false)}
+                              disabled={isSubmitting}
+                              className="w-full bg-gray-200 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-300 transition disabled:opacity-50"
+                          >
+                              Quay lại
+                          </button>
+                      </div>
                   </div>
               </div>
           </div>
