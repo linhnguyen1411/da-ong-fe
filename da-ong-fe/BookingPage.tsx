@@ -668,7 +668,7 @@ const BookingPage: React.FC = () => {
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-col items-center gap-2 mt-2">
-                                                    <img src="/qr-bank.jpg" alt="QR chuyển khoản" className="w-40 h-40 object-contain border rounded-lg" />
+                                                    <img src="/images/qr-bank.jpg" alt="QR chuyển khoản" className="w-40 h-40 object-contain border rounded-lg" />
                                                     <div className="text-center mt-2">
                                                         <div className="font-bold text-dark">Ngân hàng: <span className="text-primary">Sacombank</span></div>
                                                         <div className="font-bold text-dark">Số tài khoản: <span className="text-primary">040905944272</span></div>
