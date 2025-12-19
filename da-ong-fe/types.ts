@@ -30,7 +30,7 @@ export interface Room {
   images?: string[];  // Multiple images for gallery
   description: string;
   amenities: string[];
-  surcharge: number;
+  pricePerHour: number;
 }
 
 export interface BookingState {

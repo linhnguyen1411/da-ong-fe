@@ -208,7 +208,7 @@ const BookingPage: React.FC = () => {
           description: r.description || '',
           isAvailable: isAvailable,
           bookedForDate: r.booked_for_date || false,
-          surcharge: 0,
+          pricePerHour: parseFloat(r.price_per_hour) || 0,
           amenities: amenities.length > 0 ? amenities : ['Điều hòa', 'Wifi']
         };
       }) as Room[];
@@ -593,8 +593,8 @@ const BookingPage: React.FC = () => {
                         </div>
                         <div className="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Sức chứa: {room.capacity} khách</span>
-                            {room.surcharge > 0 ? (
-                                <span className="text-primary font-bold">+{room.surcharge.toLocaleString()}đ</span>
+                            {room.pricePerHour > 0 ? (
+                                <span className="text-primary font-bold">{room.pricePerHour.toLocaleString()}đ/h</span>
                             ) : (
                                 <span className="text-green-600 font-bold">Miễn phí</span>
                             )}
@@ -761,10 +761,10 @@ const BookingPage: React.FC = () => {
                           <span className="text-gray-600">Phòng chọn:</span>
                           <span className="font-bold text-primary">{booking.selectedRoom?.name}</span>
                       </div>
-                      {booking.selectedRoom && booking.selectedRoom.surcharge > 0 && (
+                      {booking.selectedRoom && booking.selectedRoom.pricePerHour > 0 && (
                           <div className="flex justify-between text-gray-500 italic">
                              <span>Phụ thu phòng:</span>
-                             <span>{booking.selectedRoom.surcharge.toLocaleString()}đ</span>
+                             <span>{booking.selectedRoom.pricePerHour.toLocaleString()}đ/h</span>
                           </div>
                       )}
                   </div>
@@ -781,7 +781,7 @@ const BookingPage: React.FC = () => {
                                             <div className="flex justify-between items-center">
                                                     <span className="font-bold text-lg text-dark">Tổng dự kiến:</span>
                                                     <span className="font-bold text-2xl text-primary">
-                                                            {(cartTotal + (booking.selectedRoom?.surcharge || 0)).toLocaleString()}đ
+                                                            {(cartTotal + (booking.selectedRoom?.pricePerHour || 0)).toLocaleString()}đ
                                                     </span>
                                             </div>
                                             <p className="text-xs text-gray-500 mt-2 text-center">*Giá chưa bao gồm VAT và đồ uống phát sinh tại quán.</p>
@@ -942,7 +942,7 @@ const BookingPage: React.FC = () => {
                           </div>
                           <div className="bg-gray-50 p-3 rounded-lg">
                               <span className="block text-xs text-gray-500 uppercase tracking-wider">Phụ thu</span>
-                              <span className="font-bold text-primary">{showRoomModal.surcharge.toLocaleString()}đ</span>
+                              <span className="font-bold text-primary">{showRoomModal.pricePerHour?.toLocaleString() || 0}đ/h</span>
                           </div>
                       </div>
 
