@@ -781,7 +781,11 @@ const BookingPage: React.FC = () => {
                                             <div className="flex justify-between items-center">
                                                     <span className="font-bold text-lg text-dark">Tổng dự kiến:</span>
                                                     <span className="font-bold text-2xl text-primary">
-                                                            {(cartTotal + (booking.selectedRoom?.pricePerHour || 0)).toLocaleString()}đ
+                                                            {(() => {
+                                                                const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                                                const totalEstimate = roomPrice + cartTotal;
+                                                                return totalEstimate.toLocaleString('vi-VN') + 'đ';
+                                                            })()}
                                                     </span>
                                             </div>
                                             <p className="text-xs text-gray-500 mt-2 text-center">*Giá chưa bao gồm VAT và đồ uống phát sinh tại quán.</p>
@@ -792,7 +796,10 @@ const BookingPage: React.FC = () => {
                                                     <span className="font-bold text-dark">Số tiền cần thanh toán cọc:</span>
                                                     <span className="font-bold text-lg text-primary">
                                                         {(() => {
-                                                            const deposit = Math.round(cartTotal * 0.3 + (booking.locationType === 'private' ? 300000 : 0));
+                                                            // Tổng cọc = Tiền phòng + 30% tổng món ăn
+                                                            const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                                            const foodDeposit = Math.round(cartTotal * 0.3);
+                                                            const deposit = roomPrice + foodDeposit;
                                                             return deposit.toLocaleString('vi-VN') + 'đ';
                                                         })()}
                                                     </span>
