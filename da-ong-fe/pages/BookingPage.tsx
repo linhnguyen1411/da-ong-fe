@@ -966,13 +966,51 @@ const BookingPage: React.FC = () => {
                           <p className="text-3xl font-bold text-primary">
                               {(() => {
                                   const roomPrice = booking.selectedRoom?.pricePerHour || 0;
-                                  const foodDeposit = Math.round(cartTotal * 0.3);
-                                  const deposit = roomPrice + foodDeposit;
+                                  const isOutdoor = booking.locationType === 'outdoor';
+                                  const foodTotal = cartTotal;
+                                  
+                                  let deposit = 0;
+                                  
+                                  // 1. Chỉ chọn phòng, không đặt món
+                                  if (foodTotal === 0) {
+                                      deposit = isOutdoor ? Math.max(roomPrice, 300000) : roomPrice;
+                                  }
+                                  // 2. Bill món < 1,000,000: cọc theo tiền phòng (outdoor tối thiểu 300k)
+                                  else if (foodTotal < 1000000) {
+                                      deposit = isOutdoor ? Math.max(roomPrice, 300000) : roomPrice;
+                                  }
+                                  // 3. Bill món < 5,000,000: cọc 1,000,000 (bao gồm tiền phòng)
+                                  else if (foodTotal < 5000000) {
+                                      deposit = 1000000;
+                                  }
+                                  // 4. Bill món >= 5,000,000: cọc 1,500,000 (bao gồm tiền phòng)
+                                  else {
+                                      deposit = 1500000;
+                                  }
+                                  
                                   return deposit.toLocaleString('vi-VN') + 'đ';
                               })()}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                              (Tiền phòng {(booking.selectedRoom?.pricePerHour || 0).toLocaleString()}đ + 30% tiền món {Math.round(cartTotal * 0.3).toLocaleString()}đ)
+                              {(() => {
+                                  const foodTotal = cartTotal;
+                                  const isOutdoor = booking.locationType === 'outdoor';
+                                  const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                  
+                                  if (foodTotal === 0) {
+                                      return isOutdoor && roomPrice < 300000 
+                                          ? 'Cọc tối thiểu cho bàn ngoài trời' 
+                                          : 'Cọc tiền phòng';
+                                  } else if (foodTotal < 1000000) {
+                                      return isOutdoor && roomPrice < 300000 
+                                          ? 'Bill dưới 1 triệu - Cọc tối thiểu 300k' 
+                                          : 'Bill dưới 1 triệu - Cọc tiền phòng';
+                                  } else if (foodTotal < 5000000) {
+                                      return 'Bill dưới 5 triệu - Cọc 1 triệu';
+                                  } else {
+                                      return 'Bill trên 5 triệu - Cọc 1.5 triệu';
+                                  }
+                              })()}
                           </p>
                       </div>
 
