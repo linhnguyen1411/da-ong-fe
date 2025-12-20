@@ -244,7 +244,8 @@ const BookingPage: React.FC = () => {
       image: getImageUrl(item.thumbnail_url || item.image_url || item.images_urls?.[0]),
       category: (item.category?.name as DishCategory) || DishCategory.MAIN,
       isBestSeller: item.is_best_seller,
-      isRecommended: item.is_recommended
+      isRecommended: item.is_recommended,
+      isMarketPrice: item.is_market_price || false
     }));
     // Merge with static MENU_ITEMS, prioritizing API items
     const merged = [...apiItems];
@@ -674,7 +675,9 @@ const BookingPage: React.FC = () => {
                      </div>
                      <div className="flex-1 min-w-0">
                          <h4 className="font-bold text-dark truncate">{dish.name}</h4>
-                         <p className="text-primary font-bold">{dish.price.toLocaleString()}đ</p>
+                         <p className={`font-bold ${dish.isMarketPrice ? 'text-orange-500 italic' : 'text-primary'}`}>
+                           {dish.isMarketPrice ? 'Thời giá' : `${dish.price.toLocaleString()}đ`}
+                         </p>
                      </div>
                      {mergedDishes[dish.id] && (
                          <div className="flex items-center gap-3">

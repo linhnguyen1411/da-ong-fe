@@ -2,6 +2,12 @@ import React from 'react';
 import { MENU_ITEMS } from '../data';
 import { getMenuItem } from '../services/api';
 
+interface DishInfo {
+  name: string;
+  price: number;
+  isMarketPrice?: boolean;
+}
+
 interface Props {
   selectedDishes: { [id: string]: number };
   cartItems: { [id: string]: number };
@@ -16,10 +22,14 @@ export const SelectedDishesSummary: React.FC<Props> = ({ selectedDishes, cartIte
     merged[id] = Math.max(prev, typeof qty === 'number' ? qty : 0);
   });
   // Build dish info map for fast lookup
-  const dishMap: { [id: string]: { name: string; price: number } } = {};
+  const dishMap: { [id: string]: DishInfo } = {};
   if (apiMenuItems.length > 0) {
     apiMenuItems.forEach(item => {
-      dishMap[String(item.id)] = { name: item.name, price: parseFloat(item.price) || 0 };
+      dishMap[String(item.id)] = { 
+        name: item.name, 
+        price: parseFloat(item.price) || 0,
+        isMarketPrice: item.is_market_price || false
+      };
     });
   }
   MENU_ITEMS.forEach(item => {
@@ -27,18 +37,25 @@ export const SelectedDishesSummary: React.FC<Props> = ({ selectedDishes, cartIte
   });
 
   // State to store fetched dish names
-  const [fetchedNames, setFetchedNames] = React.useState<{ [id: string]: { name: string; price: number } }>({});
+  const [fetchedNames, setFetchedNames] = React.useState<{ [id: string]: DishInfo }>({});
 
   React.useEffect(() => {
     const missingIds = Object.keys(merged).filter(id => !dishMap[id] && !fetchedNames[id]);
     if (missingIds.length > 0) {
       Promise.all(missingIds.map(id =>
         getMenuItem(Number(id)).then(
-          item => ({ id, name: item.name, price: parseFloat(item.price) || 0 })
+          item => ({ 
+            id, 
+            name: item.name, 
+            price: parseFloat(item.price) || 0,
+            isMarketPrice: item.is_market_price || false
+          })
         ).catch(() => null)
       )).then(results => {
-        const update: { [id: string]: { name: string; price: number } } = {};
-        results.forEach(r => { if (r && r.id) update[r.id] = { name: r.name, price: r.price }; });
+        const update: { [id: string]: DishInfo } = {};
+        results.forEach(r => { 
+          if (r && r.id) update[r.id] = { name: r.name, price: r.price, isMarketPrice: r.isMarketPrice }; 
+        });
         if (Object.keys(update).length > 0) setFetchedNames(prev => ({ ...prev, ...update }));
       });
     }
@@ -51,10 +68,13 @@ export const SelectedDishesSummary: React.FC<Props> = ({ selectedDishes, cartIte
       <h4 className="font-bold text-gray-700">Món đã chọn:</h4>
       {Object.entries(merged).map(([id, qty]) => {
         const d = dishMap[id] || fetchedNames[id];
+        const isMarketPrice = d?.isMarketPrice;
         return (
           <div key={id} className="flex justify-between text-sm">
             <span>{d && d.name ? d.name : `Món #${id}`} <span className="text-gray-500">x{qty}</span></span>
-            <span>{d && d.price ? (d.price * (qty as number)).toLocaleString() + 'đ' : ''}</span>
+            <span className={isMarketPrice ? 'text-orange-500 italic' : ''}>
+              {isMarketPrice ? 'Thời giá' : (d && d.price ? (d.price * (qty as number)).toLocaleString() + 'đ' : '')}
+            </span>
           </div>
         );
       })}

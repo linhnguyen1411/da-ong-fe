@@ -26,6 +26,7 @@ export interface ApiMenuItem {
   active: boolean;
   position: number;
   category?: { id: number; name: string };
+  is_market_price?: boolean;
 }
 
 export interface ApiBestSeller {

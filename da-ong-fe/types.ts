@@ -16,6 +16,7 @@ export interface Dish {
   category: DishCategory;
   isBestSeller?: boolean;
   isRecommended?: boolean;
+  isMarketPrice?: boolean;  // Thời giá - price depends on market
 }
 
 export interface Room {

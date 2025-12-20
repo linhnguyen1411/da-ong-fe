@@ -66,8 +66,8 @@ const DishCard: React.FC<DishCardProps> = ({ dish, showTags = true, showAddToCar
             >
               {dish.name}
             </h3>
-            <span className="text-primary font-bold text-lg whitespace-nowrap">
-              {dish.price.toLocaleString('vi-VN')}đ
+            <span className={`font-bold text-lg whitespace-nowrap ${dish.isMarketPrice ? 'text-orange-500 italic' : 'text-primary'}`}>
+              {dish.isMarketPrice ? 'Thời giá' : `${dish.price.toLocaleString('vi-VN')}đ`}
             </span>
           </div>
           <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-1">{dish.description}</p>

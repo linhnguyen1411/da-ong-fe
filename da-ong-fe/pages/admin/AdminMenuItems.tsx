@@ -26,7 +26,8 @@ const AdminMenuItems: React.FC = () => {
     price: '',
     category_id: 0,
     image_url: '',
-    active: true
+    active: true,
+    is_market_price: false
   });
   
   // Multiple images support
@@ -65,7 +66,8 @@ const AdminMenuItems: React.FC = () => {
       price: '',
       category_id: categories[0]?.id || 0,
       image_url: '',
-      active: true
+      active: true,
+      is_market_price: false
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -81,7 +83,8 @@ const AdminMenuItems: React.FC = () => {
       price: item.price,
       category_id: item.category_id,
       image_url: item.image_url || '',
-      active: item.active
+      active: item.active,
+      is_market_price: item.is_market_price || false
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -161,8 +164,13 @@ const AdminMenuItems: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !formData.category_id) {
+    if (!formData.name || !formData.category_id) {
       alert('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+    // Nếu không phải thời giá thì phải có giá
+    if (!formData.is_market_price && !formData.price) {
+      alert('Vui lòng nhập giá hoặc chọn "Thời giá"');
       return;
     }
 
@@ -173,9 +181,10 @@ const AdminMenuItems: React.FC = () => {
       const form = new FormData();
       form.append('name', formData.name);
       form.append('description', formData.description);
-      form.append('price', formData.price);
+      form.append('price', formData.is_market_price ? '0' : formData.price);
       form.append('category_id', String(formData.category_id));
       form.append('active', String(formData.active));
+      form.append('is_market_price', String(formData.is_market_price));
       
       // Append all new images
       imageFiles.forEach(file => {
@@ -225,8 +234,11 @@ const AdminMenuItems: React.FC = () => {
     return matchSearch && matchCategory;
   });
 
-  const formatPrice = (price: string) => {
-    return parseInt(price).toLocaleString('vi-VN') + 'đ';
+  const formatPrice = (item: ApiMenuItem) => {
+    if (item.is_market_price) {
+      return 'Thời giá';
+    }
+    return parseInt(item.price).toLocaleString('vi-VN') + 'đ';
   };
 
   const getThumbnailUrl = (item: ApiMenuItem) => {
@@ -330,8 +342,8 @@ const AdminMenuItems: React.FC = () => {
                         {item.category?.name || categories.find(c => c.id === item.category_id)?.name || '-'}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-primary">
-                      {formatPrice(item.price)}
+                    <td className={`py-3 px-4 text-right font-bold ${item.is_market_price ? 'text-orange-500 italic' : 'text-primary'}`}>
+                      {formatPrice(item)}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span className="flex items-center justify-center gap-1 text-gray-500">
@@ -416,14 +428,29 @@ const AdminMenuItems: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Giá (VNĐ) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Giá (VNĐ) {!formData.is_market_price && '*'}
+                  </label>
                   <input
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50 disabled:bg-gray-100 disabled:text-gray-400"
                     placeholder="VD: 150000"
+                    disabled={formData.is_market_price}
                   />
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_market_price"
+                      checked={formData.is_market_price}
+                      onChange={(e) => setFormData({ ...formData, is_market_price: e.target.checked, price: e.target.checked ? '' : formData.price })}
+                      className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                    />
+                    <label htmlFor="is_market_price" className="text-sm text-orange-600 font-medium cursor-pointer">
+                      Thời giá (giá liên hệ)
+                    </label>
+                  </div>
                 </div>
 
                 <div>

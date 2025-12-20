@@ -25,6 +25,7 @@ const mapApiMenuItemToDish = (item: ApiMenuItem) => ({
   category: item.category?.name || 'Khác',
   isBestSeller: false,
   isRecommended: false,
+  isMarketPrice: item.is_market_price || false,
 });
 
 const MenuPage: React.FC = () => {

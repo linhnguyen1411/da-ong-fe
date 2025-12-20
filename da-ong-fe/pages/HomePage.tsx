@@ -24,6 +24,7 @@ const apiToDish = (item: ApiMenuItem): Dish => ({
   category: DishCategory.MAIN,
   isBestSeller: false,
   isRecommended: false,
+  isMarketPrice: item.is_market_price || false,
 });
 
 const HomePage: React.FC = () => {
