@@ -60,9 +60,11 @@ const CartFloatingButton: React.FC<CartFloatingButtonProps> = () => {
 
   const totalCount: number = (Object.values(cartItems) as number[]).reduce((a, b) => a + b, 0);
 
-  // Tính tổng tiền tạm tính
+  // Tính tổng tiền tạm tính (bỏ qua món thời giá)
   const totalPrice = dishes.reduce((sum, dish) => {
     const qty = cartItems[dish.id] || 1;
+    const isMarketPrice = dish.is_market_price || dish.isMarketPrice || false;
+    if (isMarketPrice) return sum; // Bỏ qua món thời giá khi tính tổng
     const price = Number(dish.price || dish.price === 0 ? dish.price : dish.price || dish.price_vnd || 0);
     return sum + price * qty;
   }, 0);
@@ -87,6 +89,7 @@ const CartFloatingButton: React.FC<CartFloatingButtonProps> = () => {
             {dishes.map(dish => {
               const qty = cartItems[dish.id] || 1;
               const price = Number(dish.price || dish.price === 0 ? dish.price : dish.price || dish.price_vnd || 0);
+              const isMarketPrice = dish.is_market_price || dish.isMarketPrice || false;
               return (
                 <li key={dish.id} className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-3">
@@ -101,7 +104,9 @@ const CartFloatingButton: React.FC<CartFloatingButtonProps> = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-primary font-bold text-sm">{(price * qty).toLocaleString('vi-VN')}đ</span>
+                    <span className={`font-bold text-sm ${isMarketPrice ? 'text-orange-500 italic' : 'text-primary'}`}>
+                      {isMarketPrice ? 'Thời giá' : `${(price * qty).toLocaleString('vi-VN')}đ`}
+                    </span>
                     <button onClick={() => removeFromCart(String(dish.id))} className="text-red-500 hover:text-red-700 text-xs font-bold mt-1">Xóa</button>
                   </div>
                 </li>
@@ -110,7 +115,12 @@ const CartFloatingButton: React.FC<CartFloatingButtonProps> = () => {
           </ul>
           <div className="flex items-center justify-between border-t pt-4 mb-2">
             <span className="font-bold text-lg text-dark">Tạm tính</span>
-            <span className="font-bold text-primary text-2xl">{totalPrice.toLocaleString('vi-VN')}đ</span>
+            <div className="flex flex-col items-end">
+              <span className="font-bold text-primary text-2xl">{totalPrice.toLocaleString('vi-VN')}đ</span>
+              {dishes.some(d => d.is_market_price || d.isMarketPrice) && (
+                <span className="text-xs text-orange-500 italic mt-1">*Có món thời giá</span>
+              )}
+            </div>
           </div>
         </>
       )}

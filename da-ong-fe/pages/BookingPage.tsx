@@ -291,7 +291,8 @@ const BookingPage: React.FC = () => {
   const cartTotal = useMemo(() => {
     return Object.entries(booking.selectedDishes).reduce((total, [id, qty]) => {
         const dish = menuItemsToUse.find(d => d.id === id);
-        return total + (dish ? dish.price * (qty as number) : 0);
+        if (!dish || dish.isMarketPrice) return total; // Bỏ qua món thời giá
+        return total + (dish.price * (qty as number));
     }, 0);
   }, [booking.selectedDishes, menuItemsToUse]);
 
@@ -794,13 +795,24 @@ const BookingPage: React.FC = () => {
                   <div className="pt-4 border-t border-gray-300 space-y-2">
                       <div className="flex justify-between items-center">
                           <span className="font-bold text-lg text-dark">Tổng dự kiến:</span>
-                          <span className="font-bold text-2xl text-primary">
+                          <div className="flex flex-col items-end">
+                              <span className="font-bold text-2xl text-primary">
+                                  {(() => {
+                                      const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                      const totalEstimate = roomPrice + cartTotal;
+                                      return totalEstimate.toLocaleString('vi-VN') + 'đ';
+                                  })()}
+                              </span>
                               {(() => {
-                                  const roomPrice = booking.selectedRoom?.pricePerHour || 0;
-                                  const totalEstimate = roomPrice + cartTotal;
-                                  return totalEstimate.toLocaleString('vi-VN') + 'đ';
+                                  const hasMarketPrice = Object.keys(mergedDishes).some(id => {
+                                      const dish = menuItemsToUse.find(d => d.id === id);
+                                      return dish?.isMarketPrice;
+                                  });
+                                  return hasMarketPrice ? (
+                                      <span className="text-xs text-orange-500 italic mt-1">*Có món thời giá</span>
+                                  ) : null;
                               })()}
-                          </span>
+                          </div>
                       </div>
                       <p className="text-xs text-gray-500 text-center">*Giá chưa bao gồm VAT và đồ uống phát sinh tại quán.</p>
                   </div>
