@@ -16,7 +16,7 @@ import {
 import { 
   Loader2, Calendar, Users, Mail, DoorOpen, 
   CheckCircle, XCircle, Clock, AlertCircle, Eye,
-  RefreshCw, Search, Plus, X, Edit2, Volume2, VolumeX
+  RefreshCw, Search, Plus, X, Edit2, Volume2, VolumeX, Monitor, Mic
 } from 'lucide-react';
 
 interface DashboardData {
@@ -504,15 +504,26 @@ const AdminDashboardNew: React.FC = () => {
                           )}
                           <div className="text-center">
                             <p className="font-bold text-sm text-dark">{room.name}</p>
-                            <div className="flex items-center justify-center gap-1 mt-1">
-                              <p className="text-xs text-gray-500">{statusText}</p>
-                              {hasSound && (
-                                <Volume2 size={12} className="text-blue-500" title="Có âm thanh" />
-                              )}
-                              {!hasSound && isAvailable && (
-                                <VolumeX size={12} className="text-gray-400" title="Không có âm thanh" />
-                              )}
-                            </div>
+                            {isAvailable ? (
+                              // Phòng trống - hiển thị các icon tiện ích
+                              <div className="flex items-center justify-center gap-1 mt-1">
+                                {hasSound && (
+                                  <Volume2 size={12} className="text-blue-500" title="Có âm thanh" />
+                                )}
+                                {room.has_projector && (
+                                  <Monitor size={12} className="text-purple-500" title="Có máy chiếu" />
+                                )}
+                                {room.has_karaoke && (
+                                  <Mic size={12} className="text-pink-500" title="Có karaoke" />
+                                )}
+                                {!hasSound && !room.has_projector && !room.has_karaoke && (
+                                  <span className="text-xs text-gray-400">-</span>
+                                )}
+                              </div>
+                            ) : (
+                              // Phòng đã đặt/đang dùng/bảo trì - hiển thị trạng thái
+                              <p className="text-xs text-gray-500 mt-1">{statusText}</p>
+                            )}
                           </div>
                         </button>
                       );
