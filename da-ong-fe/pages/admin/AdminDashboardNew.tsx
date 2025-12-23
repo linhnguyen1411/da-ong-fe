@@ -13,7 +13,7 @@ import {
 import { 
   Loader2, Calendar, Users, Mail, DoorOpen, 
   CheckCircle, XCircle, Clock, AlertCircle, Eye,
-  RefreshCw
+  RefreshCw, Search
 } from 'lucide-react';
 
 interface DashboardData {
@@ -41,6 +41,7 @@ const AdminDashboardNew: React.FC = () => {
   const [roomsByDate, setRoomsByDate] = useState<any[]>([]);
   const [bookingsByDate, setBookingsByDate] = useState<any[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
+  const [roomSearchTerm, setRoomSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -218,70 +219,9 @@ const AdminDashboardNew: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Bookings Today */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-bold text-dark flex items-center gap-2">
-              <Calendar size={20} className="text-primary" />
-              Đặt bàn hôm nay
-            </h2>
-          </div>
-          <div className="p-6">
-            {data?.today_bookings && data.today_bookings.length > 0 ? (
-              <div className="space-y-4">
-                {data.today_bookings.map((booking: any) => (
-                  <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-bold text-dark">{booking.customer_name}</p>
-                      <p className="text-sm text-gray-500">
-                        {booking.booking_time} • {booking.party_size} khách • {booking.room?.name || 'Chưa chọn phòng'}
-                      </p>
-                      <p className="text-sm text-gray-400">{booking.customer_phone}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {booking.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleConfirmBooking(booking.id)}
-                            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition"
-                            title="Xác nhận"
-                          >
-                            <CheckCircle size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleCancelBooking(booking.id)}
-                            className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
-                            title="Hủy"
-                          >
-                            <XCircle size={18} />
-                          </button>
-                        </>
-                      )}
-                      {booking.status === 'confirmed' && (
-                        <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-bold">
-                          Đã xác nhận
-                        </span>
-                      )}
-                      {booking.status === 'cancelled' && (
-                        <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-bold">
-                          Đã hủy
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center py-8">Không có đặt bàn hôm nay</p>
-            )}
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Room Status */}
-          <div className="bg-white rounded-xl shadow-sm">
+      <div className="grid lg:grid-cols-10 gap-6">
+        {/* Room Status - 6 columns */}
+        <div className="lg:col-span-6 bg-white rounded-xl shadow-sm">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-dark flex items-center gap-2">
@@ -297,14 +237,29 @@ const AdminDashboardNew: React.FC = () => {
                   <RefreshCw size={16} className={loadingRooms ? 'animate-spin' : ''} />
                 </button>
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Chọn ngày:</label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Chọn ngày:</label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm phòng:</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      value={roomSearchTerm}
+                      onChange={(e) => setRoomSearchTerm(e.target.value)}
+                      placeholder="Nhập tên phòng..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="p-4">
@@ -314,7 +269,19 @@ const AdminDashboardNew: React.FC = () => {
                 </div>
               ) : roomsByDate.length > 0 ? (
                 <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {roomsByDate.map((room: any) => {
+                  {(() => {
+                    const filteredRooms = roomsByDate.filter((room: any) => 
+                      roomSearchTerm === '' || 
+                      room.name.toLowerCase().includes(roomSearchTerm.toLowerCase())
+                    );
+                    if (filteredRooms.length === 0) {
+                      return (
+                        <p className="text-gray-400 text-center py-4">
+                          Không tìm thấy phòng với từ khóa "{roomSearchTerm}"
+                        </p>
+                      );
+                    }
+                    return filteredRooms.map((room: any) => {
                     const roomBookings = bookingsByDate.filter((b: any) => b.room_id === room.id);
                     return (
                       <div key={room.id} className="border border-gray-200 rounded-lg p-3">
@@ -377,10 +344,72 @@ const AdminDashboardNew: React.FC = () => {
                         )}
                       </div>
                     );
-                  })}
+                  });
+                  })()}
                 </div>
               ) : (
                 <p className="text-gray-400 text-center py-4">Chưa có phòng</p>
+              )}
+            </div>
+          </div>
+
+        {/* Bookings Today - 4 columns */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Bookings Today */}
+          <div className="bg-white rounded-xl shadow-sm">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-dark flex items-center gap-2">
+                <Calendar size={20} className="text-primary" />
+                Đặt bàn hôm nay
+              </h2>
+            </div>
+            <div className="p-6">
+              {data?.today_bookings && data.today_bookings.length > 0 ? (
+                <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                  {data.today_bookings.map((booking: any) => (
+                    <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-bold text-dark">{booking.customer_name}</p>
+                        <p className="text-sm text-gray-500">
+                          {booking.booking_time} • {booking.party_size} khách • {booking.room?.name || 'Chưa chọn phòng'}
+                        </p>
+                        <p className="text-sm text-gray-400">{booking.customer_phone}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {booking.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleConfirmBooking(booking.id)}
+                              className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition"
+                              title="Xác nhận"
+                            >
+                              <CheckCircle size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleCancelBooking(booking.id)}
+                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
+                              title="Hủy"
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          </>
+                        )}
+                        {booking.status === 'confirmed' && (
+                          <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-bold">
+                            Đã xác nhận
+                          </span>
+                        )}
+                        {booking.status === 'cancelled' && (
+                          <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-bold">
+                            Đã hủy
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-center py-8">Không có đặt bàn hôm nay</p>
               )}
             </div>
           </div>
