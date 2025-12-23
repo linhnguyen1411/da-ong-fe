@@ -32,6 +32,20 @@ interface DashboardData {
   room_status: any[];
 }
 
+// Helper function to format date and time
+const formatDateTime = (dateStr: string, timeStr?: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  if (timeStr) {
+    return `${timeStr} ${day}/${month}/${year}`;
+  }
+  return `${day}/${month}/${year}`;
+};
+
 const AdminDashboardNew: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -55,7 +69,6 @@ const AdminDashboardNew: React.FC = () => {
   const [quickBookingForm, setQuickBookingForm] = useState({
     customer_name: '',
     customer_phone: '',
-    customer_email: '',
     party_size: 2,
     booking_date: new Date().toISOString().split('T')[0],
     booking_time: '18:00',
@@ -63,6 +76,7 @@ const AdminDashboardNew: React.FC = () => {
     notes: '',
     booking_items: [] as Array<{ menu_item_id: number; quantity: number }>
   });
+  const [menuItemSearch, setMenuItemSearch] = useState('');
   const [savingBooking, setSavingBooking] = useState(false);
 
   useEffect(() => {
@@ -137,7 +151,6 @@ const AdminDashboardNew: React.FC = () => {
     setQuickBookingForm({
       customer_name: '',
       customer_phone: '',
-      customer_email: '',
       party_size: 2,
       booking_date: new Date().toISOString().split('T')[0],
       booking_time: '18:00',
@@ -145,6 +158,7 @@ const AdminDashboardNew: React.FC = () => {
       notes: '',
       booking_items: []
     });
+    setMenuItemSearch('');
     setShowQuickBooking(true);
   };
 
@@ -200,7 +214,6 @@ const AdminDashboardNew: React.FC = () => {
       const bookingData: any = {
         customer_name: quickBookingForm.customer_name || 'Khách vãng lai',
         customer_phone: quickBookingForm.customer_phone,
-        customer_email: quickBookingForm.customer_email || '',
         party_size: quickBookingForm.party_size,
         booking_date: quickBookingForm.booking_date,
         booking_time: quickBookingForm.booking_time,
@@ -554,7 +567,7 @@ const AdminDashboardNew: React.FC = () => {
                       <div>
                         <p className="font-bold text-dark">{booking.customer_name}</p>
                         <p className="text-sm text-gray-500">
-                          {booking.booking_time} • {booking.party_size} khách • {booking.room?.name || 'Chưa chọn phòng'}
+                          {formatDateTime(booking.booking_date, booking.booking_time)} • {booking.party_size} khách • {booking.room?.name || 'Chưa chọn phòng'}
                         </p>
                         <p className="text-sm text-gray-400">{booking.customer_phone}</p>
                       </div>
@@ -653,8 +666,7 @@ const AdminDashboardNew: React.FC = () => {
                 <thead>
                   <tr className="text-left text-gray-500 text-sm border-b">
                     <th className="pb-3">Khách hàng</th>
-                    <th className="pb-3">Ngày</th>
-                    <th className="pb-3">Giờ</th>
+                    <th className="pb-3">Ngày giờ</th>
                     <th className="pb-3">Số khách</th>
                     <th className="pb-3">Phòng</th>
                     <th className="pb-3">Trạng thái</th>
@@ -668,8 +680,7 @@ const AdminDashboardNew: React.FC = () => {
                         <p className="font-medium text-dark">{booking.customer_name}</p>
                         <p className="text-sm text-gray-400">{booking.customer_phone}</p>
                       </td>
-                      <td className="py-3">{booking.booking_date}</td>
-                      <td className="py-3">{booking.booking_time}</td>
+                      <td className="py-3">{formatDateTime(booking.booking_date, booking.booking_time)}</td>
                       <td className="py-3">{booking.party_size}</td>
                       <td className="py-3">{booking.room?.name || '-'}</td>
                       <td className="py-3">
@@ -754,16 +765,6 @@ const AdminDashboardNew: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={quickBookingForm.customer_email}
-                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, customer_email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="Email (tùy chọn)"
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Số khách *</label>
                   <input
                     type="number"
@@ -820,10 +821,28 @@ const AdminDashboardNew: React.FC = () => {
               {/* Menu Items */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Chọn món (tùy chọn)</label>
+                
+                {/* Searchable Select */}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    value={menuItemSearch}
+                    onChange={(e) => setMenuItemSearch(e.target.value)}
+                    placeholder="Tìm kiếm món ăn..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
                 <div className="border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
                   {menuItems.length > 0 ? (
                     <div className="space-y-2">
-                      {menuItems.map((item: any) => {
+                      {menuItems
+                        .filter((item: any) => 
+                          menuItemSearch === '' || 
+                          item.name.toLowerCase().includes(menuItemSearch.toLowerCase())
+                        )
+                        .map((item: any) => {
                         const selectedItem = quickBookingForm.booking_items.find(bi => bi.menu_item_id === item.id);
                         return (
                           <div key={item.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
@@ -867,6 +886,8 @@ const AdminDashboardNew: React.FC = () => {
                         );
                       })}
                     </div>
+                  ) : menuItemSearch ? (
+                    <p className="text-gray-400 text-center py-4">Không tìm thấy món ăn với từ khóa "{menuItemSearch}"</p>
                   ) : (
                     <p className="text-gray-400 text-center py-4">Đang tải món ăn...</p>
                   )}

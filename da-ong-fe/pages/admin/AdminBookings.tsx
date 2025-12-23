@@ -21,6 +21,20 @@ interface Booking {
   created_at: string;
 }
 
+// Helper function to format date and time
+const formatDateTime = (dateStr: string, timeStr?: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  if (timeStr) {
+    return `${timeStr} ${day}/${month}/${year}`;
+  }
+  return `${day}/${month}/${year}`;
+};
+
 const AdminBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<ApiRoom[]>([]);
@@ -256,8 +270,7 @@ const AdminBookings: React.FC = () => {
                       </p>
                     </td>
                     <td className="py-3 px-4">
-                      <p className="font-medium text-dark">{booking.booking_date}</p>
-                      <p className="text-sm text-gray-400">{booking.booking_time}</p>
+                      <p className="font-medium text-dark">{formatDateTime(booking.booking_date, booking.booking_time)}</p>
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span className="flex items-center justify-center gap-1 text-dark">
