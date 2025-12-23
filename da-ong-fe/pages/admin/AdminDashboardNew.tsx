@@ -16,7 +16,7 @@ import {
 import { 
   Loader2, Calendar, Users, Mail, DoorOpen, 
   CheckCircle, XCircle, Clock, AlertCircle, Eye,
-  RefreshCw, Search, Plus, X, Edit2
+  RefreshCw, Search, Plus, X, Edit2, Volume2, VolumeX
 } from 'lucide-react';
 
 interface DashboardData {
@@ -285,7 +285,7 @@ const AdminDashboardNew: React.FC = () => {
     if (room.booked_for_date) return 'bg-red-500'; // Đã đặt - đỏ
     if (room.status === 'occupied') return 'bg-orange-500'; // Đang sử dụng - cam
     if (room.status === 'maintenance') return 'bg-yellow-500'; // Bảo trì - vàng
-    return 'bg-green-500'; // Trống - xanh
+    return 'bg-gray-200'; // Trống - xám nhạt (sẽ hiển thị icon người)
   };
 
   const getRoomStatusText = (room: any) => {
@@ -293,6 +293,10 @@ const AdminDashboardNew: React.FC = () => {
     if (room.status === 'occupied') return 'Đang sử dụng';
     if (room.status === 'maintenance') return 'Bảo trì';
     return 'Trống';
+  };
+
+  const isRoomAvailable = (room: any) => {
+    return !room.booked_for_date && room.status === 'available';
   };
 
   if (loading) {
@@ -449,8 +453,8 @@ const AdminDashboardNew: React.FC = () => {
                   <span>Bảo trì</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-green-500"></div>
-                  <span>Trống</span>
+                  <Users size={16} className="text-gray-600" />
+                  <span>Trống (số người)</span>
                 </div>
               </div>
 
@@ -477,18 +481,38 @@ const AdminDashboardNew: React.FC = () => {
                     return filteredRooms.map((room: any) => {
                       const statusColor = getRoomStatusColor(room);
                       const statusText = getRoomStatusText(room);
+                      const isAvailable = isRoomAvailable(room);
+                      const hasSound = room.has_sound_system || room.has_karaoke;
+                      
                       return (
                         <button
                           key={room.id}
                           onClick={() => handleRoomClick(room)}
                           className="flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
                         >
-                          <div className={`w-12 h-12 rounded-lg ${statusColor} flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:scale-110 transition-transform`}>
-                            <DoorOpen size={24} />
-                          </div>
+                          {isAvailable ? (
+                            // Phòng trống - hiển thị icon người và số lượng
+                            <div className="w-12 h-12 rounded-lg bg-gray-200 flex flex-col items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                              <Users size={20} className="text-gray-700" />
+                              <span className="text-xs font-bold text-gray-700 mt-0.5">{room.capacity || 0}</span>
+                            </div>
+                          ) : (
+                            // Phòng đã đặt/đang dùng/bảo trì - hiển thị màu
+                            <div className={`w-12 h-12 rounded-lg ${statusColor} flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:scale-110 transition-transform`}>
+                              <DoorOpen size={24} />
+                            </div>
+                          )}
                           <div className="text-center">
                             <p className="font-bold text-sm text-dark">{room.name}</p>
-                            <p className="text-xs text-gray-500 mt-1">{statusText}</p>
+                            <div className="flex items-center justify-center gap-1 mt-1">
+                              <p className="text-xs text-gray-500">{statusText}</p>
+                              {hasSound && (
+                                <Volume2 size={12} className="text-blue-500" title="Có âm thanh" />
+                              )}
+                              {!hasSound && isAvailable && (
+                                <VolumeX size={12} className="text-gray-400" title="Không có âm thanh" />
+                              )}
+                            </div>
                           </div>
                         </button>
                       );
@@ -915,13 +939,36 @@ const AdminDashboardNew: React.FC = () => {
 
             <div className="p-6 space-y-4">
               <div className="text-center mb-4">
-                <div className={`w-20 h-20 rounded-lg ${getRoomStatusColor(selectedRoomForAction)} flex items-center justify-center text-white font-bold text-2xl shadow-md mx-auto mb-2`}>
-                  <DoorOpen size={40} />
-                </div>
-                <p className="text-sm text-gray-500">Trạng thái: {getRoomStatusText(selectedRoomForAction)}</p>
-                {selectedRoomForAction.capacity && (
-                  <p className="text-xs text-gray-400 mt-1">Sức chứa: {selectedRoomForAction.capacity} người</p>
+                {isRoomAvailable(selectedRoomForAction) ? (
+                  // Phòng trống - hiển thị icon người và số lượng
+                  <div className="w-20 h-20 rounded-lg bg-gray-200 flex flex-col items-center justify-center shadow-md mx-auto mb-2">
+                    <Users size={36} className="text-gray-700" />
+                    <span className="text-lg font-bold text-gray-700 mt-1">{selectedRoomForAction.capacity || 0}</span>
+                  </div>
+                ) : (
+                  // Phòng đã đặt/đang dùng/bảo trì - hiển thị màu
+                  <div className={`w-20 h-20 rounded-lg ${getRoomStatusColor(selectedRoomForAction)} flex items-center justify-center text-white font-bold text-2xl shadow-md mx-auto mb-2`}>
+                    <DoorOpen size={40} />
+                  </div>
                 )}
+                <p className="text-sm text-gray-500">Trạng thái: {getRoomStatusText(selectedRoomForAction)}</p>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  {selectedRoomForAction.capacity && (
+                    <p className="text-xs text-gray-400">Sức chứa: {selectedRoomForAction.capacity} người</p>
+                  )}
+                  {(selectedRoomForAction.has_sound_system || selectedRoomForAction.has_karaoke) && (
+                    <div className="flex items-center gap-1">
+                      <Volume2 size={14} className="text-blue-500" />
+                      <span className="text-xs text-blue-500">Có âm thanh</span>
+                    </div>
+                  )}
+                  {!selectedRoomForAction.has_sound_system && !selectedRoomForAction.has_karaoke && isRoomAvailable(selectedRoomForAction) && (
+                    <div className="flex items-center gap-1">
+                      <VolumeX size={14} className="text-gray-400" />
+                      <span className="text-xs text-gray-400">Không có âm thanh</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3">
