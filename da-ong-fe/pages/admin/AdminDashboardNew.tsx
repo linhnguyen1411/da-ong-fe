@@ -16,7 +16,7 @@ import {
 import { 
   Loader2, Calendar, Users, Mail, DoorOpen, 
   CheckCircle, XCircle, Clock, AlertCircle, Eye,
-  RefreshCw, Search, Plus, X
+  RefreshCw, Search, Plus, X, Edit2
 } from 'lucide-react';
 
 interface DashboardData {
@@ -45,6 +45,8 @@ const AdminDashboardNew: React.FC = () => {
   const [bookingsByDate, setBookingsByDate] = useState<any[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomSearchTerm, setRoomSearchTerm] = useState<string>('');
+  const [selectedRoomForAction, setSelectedRoomForAction] = useState<any>(null);
+  const [showRoomActionModal, setShowRoomActionModal] = useState(false);
   
   // Quick booking modal
   const [showQuickBooking, setShowQuickBooking] = useState(false);
@@ -256,9 +258,41 @@ const AdminDashboardNew: React.FC = () => {
       await adminUpdateRoomStatus(id, status);
       fetchDashboard();
       fetchRoomsByDate(); // Reload rooms after status update
+      setShowRoomActionModal(false);
+      setSelectedRoomForAction(null);
     } catch (err) {
       alert('Có lỗi xảy ra');
     }
+  };
+
+  const handleRoomClick = (room: any) => {
+    setSelectedRoomForAction(room);
+    setShowRoomActionModal(true);
+  };
+
+  const handleQuickBookingForRoom = (room: any) => {
+    setShowRoomActionModal(false);
+    setSelectedRoomForAction(null);
+    // Pre-fill room in quick booking form
+    setQuickBookingForm({
+      ...quickBookingForm,
+      room_id: room.id.toString()
+    });
+    setShowQuickBooking(true);
+  };
+
+  const getRoomStatusColor = (room: any) => {
+    if (room.booked_for_date) return 'bg-red-500'; // Đã đặt - đỏ
+    if (room.status === 'occupied') return 'bg-orange-500'; // Đang sử dụng - cam
+    if (room.status === 'maintenance') return 'bg-yellow-500'; // Bảo trì - vàng
+    return 'bg-green-500'; // Trống - xanh
+  };
+
+  const getRoomStatusText = (room: any) => {
+    if (room.booked_for_date) return 'Đã đặt';
+    if (room.status === 'occupied') return 'Đang sử dụng';
+    if (room.status === 'maintenance') return 'Bảo trì';
+    return 'Trống';
   };
 
   if (loading) {
@@ -400,12 +434,32 @@ const AdminDashboardNew: React.FC = () => {
               </div>
             </div>
             <div className="p-4">
+              {/* Legend */}
+              <div className="mb-4 flex flex-wrap gap-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-red-500"></div>
+                  <span>Đã đặt</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-orange-500"></div>
+                  <span>Đang sử dụng</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-yellow-500"></div>
+                  <span>Bảo trì</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-green-500"></div>
+                  <span>Trống</span>
+                </div>
+              </div>
+
               {loadingRooms ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 </div>
               ) : roomsByDate.length > 0 ? (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-h-[500px] overflow-y-auto">
                   {(() => {
                     const filteredRooms = roomsByDate.filter((room: any) => 
                       roomSearchTerm === '' || 
@@ -413,75 +467,32 @@ const AdminDashboardNew: React.FC = () => {
                     );
                     if (filteredRooms.length === 0) {
                       return (
-                        <p className="text-gray-400 text-center py-4">
-                          Không tìm thấy phòng với từ khóa "{roomSearchTerm}"
-                        </p>
+                        <div className="col-span-full text-center py-4">
+                          <p className="text-gray-400">
+                            Không tìm thấy phòng với từ khóa "{roomSearchTerm}"
+                          </p>
+                        </div>
                       );
                     }
                     return filteredRooms.map((room: any) => {
-                    const roomBookings = bookingsByDate.filter((b: any) => b.room_id === room.id);
-                    return (
-                      <div key={room.id} className="border border-gray-200 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-bold text-dark">{room.name}</span>
-                          <div className="flex items-center gap-2">
-                            {room.booked_for_date ? (
-                              <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-bold">
-                                Đã đặt ({roomBookings.length})
-                              </span>
-                            ) : (
-                              <span className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-bold">
-                                Trống
-                              </span>
-                            )}
-                            <select
-                              value={room.status || 'available'}
-                              onChange={(e) => handleUpdateRoomStatus(room.id, e.target.value)}
-                              className={`text-xs px-2 py-1 rounded-full font-bold border-0 cursor-pointer ${
-                                room.status === 'available' 
-                                  ? 'bg-green-100 text-green-600' 
-                                  : room.status === 'occupied'
-                                  ? 'bg-red-100 text-red-600'
-                                  : 'bg-yellow-100 text-yellow-600'
-                              }`}
-                            >
-                              <option value="available">Trống</option>
-                              <option value="occupied">Đang sử dụng</option>
-                              <option value="maintenance">Bảo trì</option>
-                            </select>
+                      const statusColor = getRoomStatusColor(room);
+                      const statusText = getRoomStatusText(room);
+                      return (
+                        <button
+                          key={room.id}
+                          onClick={() => handleRoomClick(room)}
+                          className="flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
+                        >
+                          <div className={`w-12 h-12 rounded-lg ${statusColor} flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:scale-110 transition-transform`}>
+                            <DoorOpen size={24} />
                           </div>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          <p>Sức chứa: {room.capacity} người</p>
-                          {room.price_per_hour > 0 && (
-                            <p>Giá: {parseFloat(room.price_per_hour).toLocaleString('vi-VN')}đ/h</p>
-                          )}
-                        </div>
-                        {roomBookings.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-gray-200">
-                            <p className="text-xs font-bold text-gray-700 mb-1">Bookings:</p>
-                            {roomBookings.map((booking: any) => (
-                              <div key={booking.id} className="text-xs bg-gray-50 p-2 rounded mb-1">
-                                <p className="font-medium text-dark">{booking.customer_name}</p>
-                                <p className="text-gray-600">
-                                  {booking.booking_time} • {booking.party_size} khách
-                                </p>
-                                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${
-                                  booking.status === 'confirmed' 
-                                    ? 'bg-green-100 text-green-600'
-                                    : booking.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-600'
-                                    : 'bg-red-100 text-red-600'
-                                }`}>
-                                  {booking.status === 'confirmed' ? 'Đã xác nhận' : booking.status === 'pending' ? 'Chờ xác nhận' : 'Đã hủy'}
-                                </span>
-                              </div>
-                            ))}
+                          <div className="text-center">
+                            <p className="font-bold text-sm text-dark">{room.name}</p>
+                            <p className="text-xs text-gray-500 mt-1">{statusText}</p>
                           </div>
-                        )}
-                      </div>
-                    );
-                  });
+                        </button>
+                      );
+                    });
                   })()}
                 </div>
               ) : (
@@ -877,6 +888,103 @@ const AdminDashboardNew: React.FC = () => {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Room Action Modal */}
+      {showRoomActionModal && selectedRoomForAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-dark flex items-center gap-2">
+                <DoorOpen size={24} className="text-primary" />
+                {selectedRoomForAction.name}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowRoomActionModal(false);
+                  setSelectedRoomForAction(null);
+                }}
+                className="text-gray-400 hover:text-dark transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="text-center mb-4">
+                <div className={`w-20 h-20 rounded-lg ${getRoomStatusColor(selectedRoomForAction)} flex items-center justify-center text-white font-bold text-2xl shadow-md mx-auto mb-2`}>
+                  <DoorOpen size={40} />
+                </div>
+                <p className="text-sm text-gray-500">Trạng thái: {getRoomStatusText(selectedRoomForAction)}</p>
+                {selectedRoomForAction.capacity && (
+                  <p className="text-xs text-gray-400 mt-1">Sức chứa: {selectedRoomForAction.capacity} người</p>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    const newStatus = selectedRoomForAction.status === 'available' 
+                      ? 'occupied' 
+                      : selectedRoomForAction.status === 'occupied'
+                      ? 'maintenance'
+                      : 'available';
+                    handleUpdateRoomStatus(selectedRoomForAction.id, newStatus);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+                >
+                  <Edit2 size={20} />
+                  Cập nhật trạng thái
+                </button>
+
+                <button
+                  onClick={() => handleQuickBookingForRoom(selectedRoomForAction)}
+                  className="w-full flex items-center justify-center gap-2 bg-primary text-dark px-4 py-3 rounded-lg font-bold hover:bg-yellow-500 transition"
+                >
+                  <Plus size={20} />
+                  Đặt bàn nhanh
+                </button>
+              </div>
+
+              {/* Status Options */}
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-sm font-medium text-gray-700 mb-2">Chọn trạng thái:</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => handleUpdateRoomStatus(selectedRoomForAction.id, 'available')}
+                    className={`px-3 py-2 rounded-lg text-sm font-bold transition ${
+                      selectedRoomForAction.status === 'available'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-green-100 text-green-600 hover:bg-green-200'
+                    }`}
+                  >
+                    Trống
+                  </button>
+                  <button
+                    onClick={() => handleUpdateRoomStatus(selectedRoomForAction.id, 'occupied')}
+                    className={`px-3 py-2 rounded-lg text-sm font-bold transition ${
+                      selectedRoomForAction.status === 'occupied'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                    }`}
+                  >
+                    Đang dùng
+                  </button>
+                  <button
+                    onClick={() => handleUpdateRoomStatus(selectedRoomForAction.id, 'maintenance')}
+                    className={`px-3 py-2 rounded-lg text-sm font-bold transition ${
+                      selectedRoomForAction.status === 'maintenance'
+                        ? 'bg-yellow-500 text-white'
+                        : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                    }`}
+                  >
+                    Bảo trì
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
