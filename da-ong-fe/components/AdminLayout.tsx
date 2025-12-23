@@ -93,13 +93,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
                 // Fallback to text if image fails
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
-                const textFallback = target.nextElementSibling as HTMLElement;
-                if (textFallback) textFallback.style.display = 'block';
+                const parent = target.parentElement;
+                if (parent) {
+                  const textFallback = document.createElement('span');
+                  textFallback.className = 'text-xl font-serif font-bold';
+                  textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">&amp; ONG</span>';
+                  parent.appendChild(textFallback);
+                }
               }}
             />
-            <span className="text-xl font-serif font-bold hidden" style={{display: 'none'}}>
-              <span className="text-white">ĐÁ</span> <span className="text-primary">&amp; ONG</span>
-            </span>
           </Link>
           <button
             onClick={handleToggleSidebar}

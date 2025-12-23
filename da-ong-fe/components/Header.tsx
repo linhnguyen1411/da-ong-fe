@@ -28,13 +28,15 @@ const Header: React.FC = () => {
               // Fallback to text if image fails
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-              const textFallback = target.nextElementSibling as HTMLElement;
-              if (textFallback) textFallback.style.display = 'block';
+              const parent = target.parentElement;
+              if (parent) {
+                const textFallback = document.createElement('span');
+                textFallback.className = 'text-2xl font-serif font-bold tracking-wider uppercase';
+                textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">& ONG</span>';
+                parent.appendChild(textFallback);
+              }
             }}
           />
-          <span className="text-2xl font-serif font-bold tracking-wider uppercase hidden" style={{display: 'none'}}>
-            <span className="text-white">ĐÁ</span> <span className="text-primary">& ONG</span>
-          </span>
         </Link>
 
         {/* Desktop Nav - Absolutely Centered */}
