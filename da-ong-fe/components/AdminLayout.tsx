@@ -84,8 +84,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       >
         {/* Logo */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-          <Link to="/admin/dashboard" className="text-xl font-serif font-bold">
-            <span className="text-white">ĐÁ</span> <span className="text-primary">&amp; ONG</span>
+          <Link to="/admin/dashboard" className="flex items-center gap-2">
+            <img 
+              src="/LOGO-DA-ONG.png" 
+              alt="ĐÁ & ONG" 
+              className="h-8 w-auto object-contain"
+              onError={(e) => {
+                // Fallback to text if image fails
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const textFallback = target.nextElementSibling as HTMLElement;
+                if (textFallback) textFallback.style.display = 'block';
+              }}
+            />
+            <span className="text-xl font-serif font-bold hidden" style={{display: 'none'}}>
+              <span className="text-white">ĐÁ</span> <span className="text-primary">&amp; ONG</span>
+            </span>
           </Link>
           <button
             onClick={handleToggleSidebar}

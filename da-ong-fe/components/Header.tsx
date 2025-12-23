@@ -19,8 +19,22 @@ const Header: React.FC = () => {
     <header className="fixed top-0 left-0 w-full bg-dark/95 backdrop-blur-sm text-white z-50 border-b border-gray-800 shadow-lg h-20">
       <div className="container mx-auto px-4 h-full flex items-center justify-between relative">
         {/* Logo: Đá (White) & Ong (Yellow/Primary) */}
-        <Link to="/" className="text-2xl font-serif font-bold tracking-wider relative z-10 uppercase">
-          <span className="text-white">ĐÁ</span> <span className="text-primary">& ONG</span>
+        <Link to="/" className="flex items-center gap-2 relative z-10">
+          <img 
+            src="/LOGO-DA-ONG.png" 
+            alt="ĐÁ & ONG" 
+            className="h-12 w-auto object-contain"
+            onError={(e) => {
+              // Fallback to text if image fails
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const textFallback = target.nextElementSibling as HTMLElement;
+              if (textFallback) textFallback.style.display = 'block';
+            }}
+          />
+          <span className="text-2xl font-serif font-bold tracking-wider uppercase hidden" style={{display: 'none'}}>
+            <span className="text-white">ĐÁ</span> <span className="text-primary">& ONG</span>
+          </span>
         </Link>
 
         {/* Desktop Nav - Absolutely Centered */}

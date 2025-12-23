@@ -13,7 +13,28 @@ import { API_BASE_ORIGIN } from '../../services/api';
 
 const getImageUrl = (url?: string) => {
   if (!url) return '';
-  return url.startsWith('http') ? url : `${API_BASE_ORIGIN}${url}`;
+  if (url.startsWith('http')) return url;
+  // Handle both absolute and relative paths
+  if (url.startsWith('/')) {
+    return `${API_BASE_ORIGIN}${url}`;
+  }
+  return `${API_BASE_ORIGIN}/${url}`;
+};
+
+// Helper to get thumbnail URL with fallback
+const getThumbnailUrl = (room: any) => {
+  // Try thumbnail_url_thumb first, then thumbnail_url_medium, then thumbnail_url
+  if (room.thumbnail_url_thumb) return getImageUrl(room.thumbnail_url_thumb);
+  if (room.thumbnail_url_medium) return getImageUrl(room.thumbnail_url_medium);
+  if (room.thumbnail_url) return getImageUrl(room.thumbnail_url);
+  // Fallback to first image thumb
+  if (room.images && room.images.length > 0) {
+    const firstImg = room.images[0];
+    if (firstImg.url_thumb) return getImageUrl(firstImg.url_thumb);
+    if (firstImg.url_medium) return getImageUrl(firstImg.url_medium);
+    if (firstImg.url) return getImageUrl(firstImg.url);
+  }
+  return '';
 };
 
 const AdminRooms: React.FC = () => {
@@ -97,11 +118,11 @@ const AdminRooms: React.FC = () => {
       active: item.active
     });
 
-    // Load existing images
+    // Load existing images - prefer thumb or medium for display
     const images = (item as any).images || [];
     setExistingImages(images.map((img: any) => ({
       id: img.id,
-      url: getImageUrl(img.url)
+      url: getImageUrl(img.url_thumb || img.url_medium || img.url)
     })));
     setNewImageFiles([]);
     setNewImagePreviews([]);
@@ -313,7 +334,7 @@ const AdminRooms: React.FC = () => {
             {rooms
               .sort((a, b) => (a.position || 0) - (b.position || 0))
               .map((room, index) => {
-                const thumbnail = getImageUrl((room as any).thumbnail_url);
+                const thumbnail = getThumbnailUrl(room as any);
                 return (
                   <tr key={room.id} className="hover:bg-gray-50 transition">
                     {/* Position */}
@@ -326,8 +347,20 @@ const AdminRooms: React.FC = () => {
                     {/* Thumbnail */}
                     <td className="px-4 py-3">
                       {thumbnail ? (
-                        <img src={thumbnail} alt={room.name} className="w-12 h-12 object-cover rounded-lg" />
-                      ) : (
+                        <img 
+                          src={thumbnail} 
+                          alt={room.name} 
+                          className="w-12 h-12 object-cover rounded-lg"
+                          onError={(e) => {
+                            // Fallback to placeholder on error
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const placeholder = target.nextElementSibling as HTMLElement;
+                            if (placeholder) placeholder.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      {!thumbnail && (
                         <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                           <DoorOpen size={20} className="text-gray-400" />
                         </div>
@@ -566,7 +599,16 @@ const AdminRooms: React.FC = () => {
                   <div className="grid grid-cols-4 gap-2 mb-3">
                     {existingImages.map((img) => (
                       <div key={img.id} className="relative group">
-                        <img src={img.url} alt="" className="w-full h-20 object-cover rounded-lg" />
+                        <img 
+                          src={img.url} 
+                          alt="" 
+                          className="w-full h-20 object-cover rounded-lg"
+                          onError={(e) => {
+                            // Show placeholder on error
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23e5e7eb" width="100" height="100"/%3E%3C/svg%3E';
+                          }}
+                        />
                         <button
                           onClick={() => removeExistingImage(img.id)}
                           className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
