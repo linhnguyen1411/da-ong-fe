@@ -8,12 +8,15 @@ import {
   adminMarkContactRead,
   adminUpdateRoomStatus,
   getRooms,
-  adminGetBookings
+  adminGetBookings,
+  createBookingApi,
+  getMenuItems,
+  adminGetRooms
 } from '../../services/api';
 import { 
   Loader2, Calendar, Users, Mail, DoorOpen, 
   CheckCircle, XCircle, Clock, AlertCircle, Eye,
-  RefreshCw, Search
+  RefreshCw, Search, Plus, X
 } from 'lucide-react';
 
 interface DashboardData {
@@ -42,6 +45,23 @@ const AdminDashboardNew: React.FC = () => {
   const [bookingsByDate, setBookingsByDate] = useState<any[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [roomSearchTerm, setRoomSearchTerm] = useState<string>('');
+  
+  // Quick booking modal
+  const [showQuickBooking, setShowQuickBooking] = useState(false);
+  const [allRooms, setAllRooms] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [quickBookingForm, setQuickBookingForm] = useState({
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    party_size: 2,
+    booking_date: new Date().toISOString().split('T')[0],
+    booking_time: '18:00',
+    room_id: '',
+    notes: '',
+    booking_items: [] as Array<{ menu_item_id: number; quantity: number }>
+  });
+  const [savingBooking, setSavingBooking] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -51,6 +71,8 @@ const AdminDashboardNew: React.FC = () => {
     }
     fetchDashboard();
     fetchRoomsByDate();
+    fetchAllRooms();
+    fetchMenuItems();
   }, [navigate]);
 
   useEffect(() => {
@@ -88,6 +110,115 @@ const AdminDashboardNew: React.FC = () => {
       console.error('Error fetching rooms by date:', err);
     } finally {
       setLoadingRooms(false);
+    }
+  };
+
+  const fetchAllRooms = async () => {
+    try {
+      const rooms = await adminGetRooms();
+      setAllRooms(rooms);
+    } catch (err: any) {
+      console.error('Error fetching rooms:', err);
+    }
+  };
+
+  const fetchMenuItems = async () => {
+    try {
+      const items = await getMenuItems();
+      setMenuItems(items);
+    } catch (err: any) {
+      console.error('Error fetching menu items:', err);
+    }
+  };
+
+  const handleOpenQuickBooking = () => {
+    setQuickBookingForm({
+      customer_name: '',
+      customer_phone: '',
+      customer_email: '',
+      party_size: 2,
+      booking_date: new Date().toISOString().split('T')[0],
+      booking_time: '18:00',
+      room_id: '',
+      notes: '',
+      booking_items: []
+    });
+    setShowQuickBooking(true);
+  };
+
+  const handleAddMenuItem = (menuItemId: number) => {
+    const existing = quickBookingForm.booking_items.find(item => item.menu_item_id === menuItemId);
+    if (existing) {
+      setQuickBookingForm({
+        ...quickBookingForm,
+        booking_items: quickBookingForm.booking_items.map(item =>
+          item.menu_item_id === menuItemId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      });
+    } else {
+      setQuickBookingForm({
+        ...quickBookingForm,
+        booking_items: [...quickBookingForm.booking_items, { menu_item_id: menuItemId, quantity: 1 }]
+      });
+    }
+  };
+
+  const handleRemoveMenuItem = (menuItemId: number) => {
+    setQuickBookingForm({
+      ...quickBookingForm,
+      booking_items: quickBookingForm.booking_items.filter(item => item.menu_item_id !== menuItemId)
+    });
+  };
+
+  const handleUpdateMenuItemQuantity = (menuItemId: number, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveMenuItem(menuItemId);
+      return;
+    }
+    setQuickBookingForm({
+      ...quickBookingForm,
+      booking_items: quickBookingForm.booking_items.map(item =>
+        item.menu_item_id === menuItemId
+          ? { ...item, quantity }
+          : item
+      )
+    });
+  };
+
+  const handleSubmitQuickBooking = async () => {
+    if (!quickBookingForm.customer_phone || !quickBookingForm.booking_date || !quickBookingForm.booking_time) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc (SĐT, Ngày, Giờ)');
+      return;
+    }
+
+    try {
+      setSavingBooking(true);
+      const bookingData: any = {
+        customer_name: quickBookingForm.customer_name || 'Khách vãng lai',
+        customer_phone: quickBookingForm.customer_phone,
+        customer_email: quickBookingForm.customer_email || '',
+        party_size: quickBookingForm.party_size,
+        booking_date: quickBookingForm.booking_date,
+        booking_time: quickBookingForm.booking_time,
+        notes: quickBookingForm.notes || '',
+        booking_items_attributes: quickBookingForm.booking_items
+      };
+
+      if (quickBookingForm.room_id) {
+        bookingData.room_id = parseInt(quickBookingForm.room_id);
+      }
+
+      await createBookingApi(bookingData);
+      alert('Đặt bàn thành công!');
+      setShowQuickBooking(false);
+      fetchDashboard();
+      fetchRoomsByDate();
+    } catch (err: any) {
+      alert('Lỗi: ' + (err.message || 'Không thể tạo booking'));
+    } finally {
+      setSavingBooking(false);
     }
   };
 
@@ -158,8 +289,14 @@ const AdminDashboardNew: React.FC = () => {
 
   return (
     <AdminLayout title="Dashboard">
-      {/* Refresh Button */}
-      <div className="flex justify-end mb-4">
+      {/* Header Actions */}
+      <div className="flex justify-between items-center mb-4">
+        <button 
+          onClick={handleOpenQuickBooking}
+          className="flex items-center gap-2 bg-primary text-dark px-4 py-2 rounded-lg font-bold hover:bg-yellow-500 transition shadow-md"
+        >
+          <Plus size={18} /> Đặt bàn nhanh
+        </button>
         <button 
           onClick={fetchDashboard}
           className="flex items-center gap-2 text-gray-500 hover:text-dark transition"
@@ -528,6 +665,222 @@ const AdminDashboardNew: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Quick Booking Modal */}
+      {showQuickBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <h2 className="text-xl font-bold text-dark flex items-center gap-2">
+                <Plus size={24} className="text-primary" />
+                Đặt bàn nhanh
+              </h2>
+              <button
+                onClick={() => setShowQuickBooking(false)}
+                className="text-gray-400 hover:text-dark transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Customer Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng</label>
+                  <input
+                    type="text"
+                    value={quickBookingForm.customer_name}
+                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, customer_name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Tên khách hàng"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
+                  <input
+                    type="tel"
+                    value={quickBookingForm.customer_phone}
+                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, customer_phone: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Số điện thoại"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={quickBookingForm.customer_email}
+                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, customer_email: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="Email (tùy chọn)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Số khách *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={quickBookingForm.party_size}
+                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, party_size: parseInt(e.target.value) || 1 })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Booking Date & Time */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ngày đặt bàn *</label>
+                  <input
+                    type="date"
+                    value={quickBookingForm.booking_date}
+                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, booking_date: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Giờ đặt bàn *</label>
+                  <input
+                    type="time"
+                    value={quickBookingForm.booking_time}
+                    onChange={(e) => setQuickBookingForm({ ...quickBookingForm, booking_time: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Room Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Chọn phòng (tùy chọn)</label>
+                <select
+                  value={quickBookingForm.room_id}
+                  onChange={(e) => setQuickBookingForm({ ...quickBookingForm, room_id: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="">-- Không chọn phòng --</option>
+                  {allRooms.map((room: any) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name} - {room.capacity} người
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Menu Items */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Chọn món (tùy chọn)</label>
+                <div className="border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                  {menuItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {menuItems.map((item: any) => {
+                        const selectedItem = quickBookingForm.booking_items.find(bi => bi.menu_item_id === item.id);
+                        return (
+                          <div key={item.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <div className="flex-1">
+                              <p className="font-medium text-dark">{item.name}</p>
+                              <p className="text-sm text-gray-500">
+                                {item.is_market_price ? 'Thời giá' : `${parseFloat(item.price).toLocaleString('vi-VN')}đ`}
+                              </p>
+                            </div>
+                            {selectedItem ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleUpdateMenuItemQuantity(item.id, selectedItem.quantity - 1)}
+                                  className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold"
+                                >
+                                  -
+                                </button>
+                                <span className="w-8 text-center font-bold">{selectedItem.quantity}</span>
+                                <button
+                                  onClick={() => handleUpdateMenuItemQuantity(item.id, selectedItem.quantity + 1)}
+                                  className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold"
+                                >
+                                  +
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveMenuItem(item.id)}
+                                  className="ml-2 text-red-500 hover:text-red-600"
+                                >
+                                  <X size={18} />
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleAddMenuItem(item.id)}
+                                className="px-3 py-1 bg-primary text-dark rounded-lg font-bold hover:bg-yellow-500 transition text-sm"
+                              >
+                                Thêm
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 text-center py-4">Đang tải món ăn...</p>
+                  )}
+                </div>
+                {quickBookingForm.booking_items.length > 0 && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-bold text-gray-700 mb-1">Món đã chọn:</p>
+                    {quickBookingForm.booking_items.map((bi: any) => {
+                      const item = menuItems.find(mi => mi.id === bi.menu_item_id);
+                      return item ? (
+                        <p key={bi.menu_item_id} className="text-xs text-gray-600">
+                          {item.name} x{bi.quantity}
+                        </p>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                <textarea
+                  value={quickBookingForm.notes}
+                  onChange={(e) => setQuickBookingForm({ ...quickBookingForm, notes: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  rows={3}
+                  placeholder="Ghi chú thêm..."
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setShowQuickBooking(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSubmitQuickBooking}
+                disabled={savingBooking || !quickBookingForm.customer_phone || !quickBookingForm.booking_date || !quickBookingForm.booking_time}
+                className="flex-1 px-4 py-2 bg-primary text-dark rounded-lg font-bold hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {savingBooking ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={18} />
+                    Tạo đặt bàn
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };
