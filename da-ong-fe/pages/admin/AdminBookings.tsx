@@ -127,26 +127,26 @@ const AdminBookings: React.FC = () => {
   return (
     <AdminLayout title="Quản lý Đặt bàn">
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {/* Search */}
-          <div className="relative flex-1 md:max-w-xs">
+          <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Tìm theo tên, SĐT..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+              className="w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
             />
           </div>
 
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             {/* Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+              className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
             >
               <option value="">Tất cả trạng thái</option>
               <option value="pending">Chờ xác nhận</option>
@@ -160,14 +160,14 @@ const AdminBookings: React.FC = () => {
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+              className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
             />
 
             {/* Room Filter */}
             <select
               value={roomFilter}
               onChange={(e) => setRoomFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+              className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
             >
               <option value="">Tất cả phòng</option>
               {rooms.map(room => (
@@ -182,7 +182,7 @@ const AdminBookings: React.FC = () => {
                   setDateFilter('');
                   setRoomFilter('');
                 }}
-                className="px-4 py-2 text-gray-500 hover:text-gray-700"
+                className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg sm:border-0"
               >
                 Xóa lọc
               </button>
@@ -192,15 +192,15 @@ const AdminBookings: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-100 p-2 rounded-full">
-              <Calendar className="text-blue-600" size={20} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
+              <Calendar className="text-blue-600" size={18} />
             </div>
-            <div>
-              <p className="text-xl font-bold text-dark">{bookings.length}</p>
-              <p className="text-gray-500 text-sm">Tổng đặt bàn</p>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-dark">{bookings.length}</p>
+              <p className="text-gray-500 text-xs sm:text-sm">Tổng đặt bàn</p>
             </div>
           </div>
         </div>
@@ -247,18 +247,20 @@ const AdminBookings: React.FC = () => {
 
       {/* Bookings Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">Khách hàng</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">Ngày & Giờ</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">Số khách</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">Phòng</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">Trạng thái</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">Thao tác</th>
-              </tr>
-            </thead>
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="inline-block min-w-full align-middle">
+            <div className="overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wider">Khách hàng</th>
+                    <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wider">Ngày & Giờ</th>
+                    <th className="px-3 sm:px-4 py-3 text-center text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wider">Số khách</th>
+                    <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wider hidden sm:table-cell">Phòng</th>
+                    <th className="px-3 sm:px-4 py-3 text-center text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
+                    <th className="px-3 sm:px-4 py-3 text-center text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
+                  </tr>
+                </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredBookings.length > 0 ? (
                 filteredBookings.map(booking => (

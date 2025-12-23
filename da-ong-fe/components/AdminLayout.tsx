@@ -24,8 +24,23 @@ const menuItems = [
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Closed by default on mobile
   const [adminUser, setAdminUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Auto-open sidebar on desktop, close on mobile
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -49,10 +64,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? 'w-64' : 'w-20'
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${
+          sidebarOpen ? 'w-64' : 'w-64 lg:w-20'
         } bg-dark text-white transition-all duration-300 flex flex-col fixed h-full z-50`}
       >
         {/* Logo */}
@@ -125,16 +150,24 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
+      <main className={`flex-1 lg:${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
         {/* Top Header */}
         <header className="bg-white shadow-sm sticky top-0 z-40">
-          <div className="px-6 py-4">
-            <h1 className="text-xl font-bold text-dark">{title || 'Admin Panel'}</h1>
+          <div className="px-4 lg:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden text-gray-600 hover:text-dark p-2"
+              >
+                <Menu size={24} />
+              </button>
+              <h1 className="text-lg lg:text-xl font-bold text-dark">{title || 'Admin Panel'}</h1>
+            </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="p-6">{children}</div>
+        <div className="p-4 lg:p-6">{children}</div>
       </main>
     </div>
   );

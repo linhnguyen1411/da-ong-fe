@@ -403,76 +403,76 @@ const AdminDashboardNew: React.FC = () => {
   return (
     <AdminLayout title="Dashboard">
       {/* Header Actions */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-4">
         <button 
           onClick={handleOpenQuickBooking}
-          className="flex items-center gap-2 bg-primary text-dark px-4 py-2 rounded-lg font-bold hover:bg-yellow-500 transition shadow-md"
+          className="flex items-center justify-center gap-2 bg-primary text-dark px-4 py-2.5 rounded-lg font-bold hover:bg-yellow-500 transition shadow-md text-sm sm:text-base"
         >
-          <Plus size={18} /> Đặt bàn nhanh
+          <Plus size={18} /> <span className="whitespace-nowrap">Đặt bàn nhanh</span>
         </button>
         <button 
           onClick={fetchDashboard}
-          className="flex items-center gap-2 text-gray-500 hover:text-dark transition"
+          className="flex items-center justify-center gap-2 text-gray-500 hover:text-dark transition px-4 py-2.5 rounded-lg border border-gray-300 sm:border-0 text-sm sm:text-base"
         >
           <RefreshCw size={16} /> Làm mới
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <Calendar className="text-blue-600 w-6 h-6" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-blue-100 p-2 sm:p-3 rounded-full flex-shrink-0">
+              <Calendar className="text-blue-600 w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-dark">{data?.stats.total_bookings || 0}</p>
-              <p className="text-gray-500 text-sm">Tổng đặt bàn</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-dark">{data?.stats.total_bookings || 0}</p>
+              <p className="text-gray-500 text-xs sm:text-sm">Tổng đặt bàn</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="bg-yellow-100 p-3 rounded-full">
-              <Clock className="text-yellow-600 w-6 h-6" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-yellow-100 p-2 sm:p-3 rounded-full flex-shrink-0">
+              <Clock className="text-yellow-600 w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-dark">{data?.stats.pending || 0}</p>
-              <p className="text-gray-500 text-sm">Chờ xác nhận</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="bg-green-100 p-3 rounded-full">
-              <CheckCircle className="text-green-600 w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-dark">{data?.stats.confirmed || 0}</p>
-              <p className="text-gray-500 text-sm">Đã xác nhận</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-dark">{data?.stats.pending || 0}</p>
+              <p className="text-gray-500 text-xs sm:text-sm">Chờ xác nhận</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary/20 p-3 rounded-full">
-              <Users className="text-primary w-6 h-6" />
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-green-100 p-2 sm:p-3 rounded-full flex-shrink-0">
+              <CheckCircle className="text-green-600 w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-dark">{data?.stats.today || 0}</p>
-              <p className="text-gray-500 text-sm">Hôm nay</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-dark">{data?.stats.confirmed || 0}</p>
+              <p className="text-gray-500 text-xs sm:text-sm">Đã xác nhận</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-primary/20 p-2 sm:p-3 rounded-full flex-shrink-0">
+              <Users className="text-primary w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-dark">{data?.stats.today || 0}</p>
+              <p className="text-gray-500 text-xs sm:text-sm">Hôm nay</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-10 gap-6">
+      <div className="grid lg:grid-cols-10 gap-4 sm:gap-6">
         {/* Room Status - 6 columns */}
         <div className="lg:col-span-6 bg-white rounded-xl shadow-sm">
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-dark flex items-center gap-2">
                   <DoorOpen size={20} className="text-primary" />
@@ -487,18 +487,18 @@ const AdminDashboardNew: React.FC = () => {
                   <RefreshCw size={16} className={loadingRooms ? 'animate-spin' : ''} />
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Chọn ngày:</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Chọn ngày:</label>
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm phòng:</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Tìm kiếm phòng:</label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
@@ -506,30 +506,30 @@ const AdminDashboardNew: React.FC = () => {
                       value={roomSearchTerm}
                       onChange={(e) => setRoomSearchTerm(e.target.value)}
                       placeholder="Nhập tên phòng..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </div>
               </div>
             </div>
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {/* Legend */}
-              <div className="mb-4 flex flex-wrap gap-4 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-red-500"></div>
-                  <span>Đã đặt</span>
+              <div className="mb-3 sm:mb-4 flex flex-wrap gap-2 sm:gap-4 text-xs">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-red-500"></div>
+                  <span className="text-xs">Đã đặt</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-orange-500"></div>
-                  <span>Đang sử dụng</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-orange-500"></div>
+                  <span className="text-xs">Đang sử dụng</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-yellow-500"></div>
-                  <span>Bảo trì</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-yellow-500"></div>
+                  <span className="text-xs">Bảo trì</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users size={16} className="text-gray-600" />
-                  <span>Trống (số người)</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Users size={14} className="text-gray-600 sm:w-4 sm:h-4" />
+                  <span className="text-xs">Trống (số người)</span>
                 </div>
               </div>
 
@@ -538,7 +538,7 @@ const AdminDashboardNew: React.FC = () => {
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 </div>
               ) : roomsByDate.length > 0 ? (
-                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-h-[500px] overflow-y-auto">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
                   {(() => {
                     const filteredRooms = roomsByDate.filter((room: any) => 
                       roomSearchTerm === '' || 
@@ -563,34 +563,34 @@ const AdminDashboardNew: React.FC = () => {
                         <button
                           key={room.id}
                           onClick={() => handleRoomClick(room)}
-                          className="flex flex-col items-center gap-2 p-3 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
+                          className="flex flex-col items-center gap-1.5 sm:gap-2 p-2 sm:p-3 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
                         >
                           {/* Icon phòng - luôn hiển thị DoorOpen */}
-                          <div className={`w-12 h-12 rounded-lg ${isAvailable ? 'bg-gray-200' : statusColor} flex items-center justify-center ${isAvailable ? '' : 'text-white'} font-bold text-lg shadow-md group-hover:scale-110 transition-transform`}>
-                            <DoorOpen size={24} className={isAvailable ? 'text-gray-700' : ''} />
+                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${isAvailable ? 'bg-gray-200' : statusColor} flex items-center justify-center ${isAvailable ? '' : 'text-white'} font-bold shadow-md group-hover:scale-110 transition-transform`}>
+                            <DoorOpen size={20} className={`sm:w-6 sm:h-6 ${isAvailable ? 'text-gray-700' : ''}`} />
                           </div>
-                          <div className="text-center">
-                            <p className="font-bold text-sm text-dark">{room.name}</p>
+                          <div className="text-center w-full">
+                            <p className="font-bold text-xs sm:text-sm text-dark truncate">{room.name}</p>
                             {isAvailable ? (
                               // Phòng trống - hiển thị icon người + số lượng và các icon tiện ích
-                              <div className="flex items-center justify-center gap-1.5 mt-1">
+                              <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 flex-wrap">
                                 <div className="flex items-center gap-0.5">
-                                  <Users size={12} className="text-gray-600" />
-                                  <span className="text-xs font-bold text-gray-600">{room.capacity || 0}</span>
+                                  <Users size={10} className="text-gray-600 sm:w-3 sm:h-3" />
+                                  <span className="text-[10px] sm:text-xs font-bold text-gray-600">{room.capacity || 0}</span>
                                 </div>
                                 {hasSound && (
-                                  <Volume2 size={12} className="text-blue-500" title="Có âm thanh" />
+                                  <Volume2 size={10} className="text-blue-500 sm:w-3 sm:h-3" title="Có âm thanh" />
                                 )}
                                 {room.has_projector && (
-                                  <Monitor size={12} className="text-purple-500" title="Có máy chiếu" />
+                                  <Monitor size={10} className="text-purple-500 sm:w-3 sm:h-3" title="Có máy chiếu" />
                                 )}
                                 {!hasSound && !room.has_projector && (
-                                  <span className="text-xs text-gray-400">-</span>
+                                  <span className="text-[10px] sm:text-xs text-gray-400">-</span>
                                 )}
                               </div>
                             ) : (
                               // Phòng đã đặt/đang dùng/bảo trì - hiển thị trạng thái
-                              <p className="text-xs text-gray-500 mt-1">{statusText}</p>
+                              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{statusText}</p>
                             )}
                           </div>
                         </button>
@@ -605,53 +605,54 @@ const AdminDashboardNew: React.FC = () => {
           </div>
 
         {/* Bookings Today - 4 columns */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-4 sm:space-y-6">
           {/* Bookings Today */}
           <div className="bg-white rounded-xl shadow-sm">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-dark flex items-center gap-2">
-                <Calendar size={20} className="text-primary" />
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <h2 className="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
+                <Calendar size={18} className="text-primary sm:w-5 sm:h-5" />
                 Đặt bàn hôm nay
               </h2>
             </div>
-            <div className="p-6">
+            <div className="p-3 sm:p-6">
               {data?.today_bookings && data.today_bookings.length > 0 ? (
-                <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                <div className="space-y-3 sm:space-y-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
                   {data.today_bookings.map((booking: any) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-bold text-dark">{booking.customer_name}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatDateTime(booking.booking_date, booking.booking_time)} • {booking.party_size} khách • {booking.room?.name || 'Chưa chọn phòng'}
+                    <div key={booking.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm sm:text-base text-dark truncate">{booking.customer_name}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1 break-words">
+                          {formatDateTime(booking.booking_date, booking.booking_time)} • {booking.party_size} khách
                         </p>
-                        <p className="text-sm text-gray-400">{booking.customer_phone}</p>
+                        <p className="text-xs sm:text-sm text-gray-500">{booking.room?.name || 'Chưa chọn phòng'}</p>
+                        <p className="text-xs sm:text-sm text-gray-400 mt-1">{booking.customer_phone}</p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {booking.status === 'pending' && (
                           <>
                             <button
                               onClick={() => handleConfirmBooking(booking.id)}
-                              className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition"
+                              className="bg-green-500 text-white p-2 sm:p-2.5 rounded-lg hover:bg-green-600 transition flex-shrink-0"
                               title="Xác nhận"
                             >
-                              <CheckCircle size={18} />
+                              <CheckCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
                             </button>
                             <button
                               onClick={() => handleCancelBooking(booking.id)}
-                              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition"
+                              className="bg-red-500 text-white p-2 sm:p-2.5 rounded-lg hover:bg-red-600 transition flex-shrink-0"
                               title="Hủy"
                             >
-                              <XCircle size={18} />
+                              <XCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
                             </button>
                           </>
                         )}
                         {booking.status === 'confirmed' && (
-                          <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-bold">
+                          <span className="bg-green-100 text-green-600 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap">
                             Đã xác nhận
                           </span>
                         )}
                         {booking.status === 'cancelled' && (
-                          <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-bold">
+                          <span className="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap">
                             Đã hủy
                           </span>
                         )}
@@ -660,20 +661,20 @@ const AdminDashboardNew: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 text-center py-8">Không có đặt bàn hôm nay</p>
+                <p className="text-gray-400 text-center py-6 sm:py-8 text-sm sm:text-base">Không có đặt bàn hôm nay</p>
               )}
             </div>
           </div>
 
           {/* Recent Contacts */}
           <div className="bg-white rounded-xl shadow-sm">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-dark flex items-center gap-2">
-                <Mail size={20} className="text-primary" />
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <h2 className="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
+                <Mail size={18} className="text-primary sm:w-5 sm:h-5" />
                 Liên hệ mới
               </h2>
             </div>
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {data?.recent_contacts && data.recent_contacts.length > 0 ? (
                 <div className="space-y-3">
                   {data.recent_contacts.map((contact: any) => (
@@ -707,82 +708,95 @@ const AdminDashboardNew: React.FC = () => {
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="mt-6 bg-white rounded-xl shadow-sm">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-dark flex items-center gap-2">
-            <AlertCircle size={20} className="text-primary" />
+      <div className="mt-4 sm:mt-6 bg-white rounded-xl shadow-sm">
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h2 className="text-base sm:text-lg font-bold text-dark flex items-center gap-2">
+            <AlertCircle size={18} className="text-primary sm:w-5 sm:h-5" />
             Đặt bàn sắp tới
           </h2>
         </div>
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {data?.upcoming_bookings && data.upcoming_bookings.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-gray-500 text-sm border-b">
-                    <th className="pb-3">Khách hàng</th>
-                    <th className="pb-3">Ngày giờ</th>
-                    <th className="pb-3">Số khách</th>
-                    <th className="pb-3">Phòng</th>
-                    <th className="pb-3">Trạng thái</th>
-                    <th className="pb-3">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.upcoming_bookings.map((booking: any) => (
-                    <tr key={booking.id} className="border-b last:border-0">
-                      <td className="py-3">
-                        <p className="font-medium text-dark">{booking.customer_name}</p>
-                        <p className="text-sm text-gray-400">{booking.customer_phone}</p>
-                      </td>
-                      <td className="py-3">{formatDateTime(booking.booking_date, booking.booking_time)}</td>
-                      <td className="py-3">{booking.party_size}</td>
-                      <td className="py-3">{booking.room?.name || '-'}</td>
-                      <td className="py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          booking.status === 'pending' 
-                            ? 'bg-yellow-100 text-yellow-600'
-                            : booking.status === 'confirmed'
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-red-100 text-red-600'
-                        }`}>
-                          {booking.status === 'pending' ? 'Chờ' : booking.status === 'confirmed' ? 'Xác nhận' : 'Hủy'}
-                        </span>
-                      </td>
-                      <td className="py-3">
-                        {booking.status === 'pending' && (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handleConfirmBooking(booking.id)}
-                              className="text-green-500 hover:text-green-600"
-                            >
-                              <CheckCircle size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleCancelBooking(booking.id)}
-                              className="text-red-500 hover:text-red-600"
-                            >
-                              <XCircle size={18} />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <div className="overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Ngày giờ</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Số khách</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Phòng</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {data.upcoming_bookings.map((booking: any) => (
+                        <tr key={booking.id} className="hover:bg-gray-50">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <p className="text-xs sm:text-sm font-medium text-dark">{booking.customer_name}</p>
+                            <p className="text-xs text-gray-400 sm:hidden">{booking.customer_phone}</p>
+                            <p className="text-xs text-gray-500 sm:hidden">{booking.room?.name || '-'}</p>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <p className="text-xs sm:text-sm text-gray-900">{formatDateTime(booking.booking_date, booking.booking_time)}</p>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <p className="text-xs sm:text-sm text-gray-900">{booking.party_size}</p>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
+                            <p className="text-xs sm:text-sm text-gray-900">{booking.room?.name || '-'}</p>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                              booking.status === 'pending' 
+                                ? 'bg-yellow-100 text-yellow-600'
+                                : booking.status === 'confirmed'
+                                ? 'bg-green-100 text-green-600'
+                                : 'bg-red-100 text-red-600'
+                            }`}>
+                              {booking.status === 'pending' ? 'Chờ' : booking.status === 'confirmed' ? 'Xác nhận' : 'Hủy'}
+                            </span>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                            {booking.status === 'pending' && (
+                              <div className="flex gap-1 sm:gap-2">
+                                <button
+                                  onClick={() => handleConfirmBooking(booking.id)}
+                                  className="text-green-500 hover:text-green-600 p-1"
+                                  title="Xác nhận"
+                                >
+                                  <CheckCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
+                                </button>
+                                <button
+                                  onClick={() => handleCancelBooking(booking.id)}
+                                  className="text-red-500 hover:text-red-600 p-1"
+                                  title="Hủy"
+                                >
+                                  <XCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-8">Không có đặt bàn sắp tới</p>
+            <p className="text-gray-400 text-center py-6 sm:py-8 text-sm sm:text-base">Không có đặt bàn sắp tới</p>
           )}
         </div>
       </div>
 
       {/* Quick Booking Modal */}
       {showQuickBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
               <h2 className="text-xl font-bold text-dark flex items-center gap-2">
                 <Plus size={24} className="text-primary" />
                 Đặt bàn nhanh
@@ -795,9 +809,9 @@ const AdminDashboardNew: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               {/* Customer Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng</label>
                   <input
@@ -975,17 +989,17 @@ const AdminDashboardNew: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-100 flex gap-3">
+            <div className="p-4 sm:p-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sticky bottom-0 bg-white">
               <button
                 onClick={() => setShowQuickBooking(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition"
+                className="w-full sm:flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition text-sm sm:text-base"
               >
                 Hủy
               </button>
               <button
                 onClick={handleSubmitQuickBooking}
                 disabled={savingBooking || !quickBookingForm.customer_phone || !quickBookingForm.booking_date || !quickBookingForm.booking_time}
-                className="flex-1 px-4 py-2 bg-primary text-dark rounded-lg font-bold hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full sm:flex-1 px-4 py-2.5 bg-primary text-dark rounded-lg font-bold hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {savingBooking ? (
                   <>
@@ -1006,11 +1020,11 @@ const AdminDashboardNew: React.FC = () => {
 
       {/* Room Action Modal */}
       {showRoomActionModal && selectedRoomForAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-dark flex items-center gap-2">
-                <DoorOpen size={24} className="text-primary" />
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <h2 className="text-lg sm:text-xl font-bold text-dark flex items-center gap-2">
+                <DoorOpen size={20} className="text-primary sm:w-6 sm:h-6" />
                 {selectedRoomForAction.name}
               </h2>
               <button
@@ -1018,13 +1032,13 @@ const AdminDashboardNew: React.FC = () => {
                   setShowRoomActionModal(false);
                   setSelectedRoomForAction(null);
                 }}
-                className="text-gray-400 hover:text-dark transition"
+                className="text-gray-400 hover:text-dark transition p-1"
               >
-                <X size={24} />
+                <X size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <div className="text-center mb-4">
                 {/* Icon phòng - luôn hiển thị DoorOpen */}
                 <div className={`w-20 h-20 rounded-lg ${isRoomAvailable(selectedRoomForAction) ? 'bg-gray-200' : getRoomStatusColor(selectedRoomForAction)} flex items-center justify-center ${isRoomAvailable(selectedRoomForAction) ? '' : 'text-white'} font-bold text-2xl shadow-md mx-auto mb-2`}>
