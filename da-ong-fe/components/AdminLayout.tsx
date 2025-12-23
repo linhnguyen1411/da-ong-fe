@@ -42,6 +42,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleToggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
     const user = localStorage.getItem('admin_user');
@@ -76,24 +80,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       <aside
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } ${
-          sidebarOpen ? 'w-64' : 'w-64 lg:w-20'
-        } bg-dark text-white transition-all duration-300 flex flex-col fixed h-full z-50`}
+        } w-64 bg-dark text-white transition-all duration-300 flex flex-col fixed h-full z-50`}
       >
         {/* Logo */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-          {sidebarOpen ? (
-            <Link to="/admin/dashboard" className="text-xl font-serif font-bold">
-              <span className="text-white">ĐÁ</span> <span className="text-primary">&amp; ONG</span>
-            </Link>
-          ) : (
-            <Link to="/admin/dashboard" className="text-xl font-serif font-bold text-primary mx-auto">
-              Đ
-            </Link>
-          )}
+          <Link to="/admin/dashboard" className="text-xl font-serif font-bold">
+            <span className="text-white">ĐÁ</span> <span className="text-primary">&amp; ONG</span>
+          </Link>
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-gray-400 hover:text-white p-1"
+            onClick={handleToggleSidebar}
+            className="text-gray-400 hover:text-white p-1 lg:hidden"
+            aria-label="Toggle sidebar"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -114,8 +111,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
                 }`}
               >
                 <item.icon size={20} />
-                {sidebarOpen && <span>{item.label}</span>}
-                {sidebarOpen && isActive && <ChevronRight size={16} className="ml-auto" />}
+                <span className="lg:inline">{item.label}</span>
+                {isActive && <ChevronRight size={16} className="ml-auto" />}
               </Link>
             );
           })}
@@ -123,34 +120,24 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
 
         {/* User Info */}
         <div className="p-4 border-t border-gray-700">
-          {sidebarOpen ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-white">{adminUser?.name}</p>
-                <p className="text-xs text-gray-400">{adminUser?.email}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="text-red-400 hover:text-red-300 p-2"
-                title="Đăng xuất"
-              >
-                <LogOut size={18} />
-              </button>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-white">{adminUser?.name}</p>
+              <p className="text-xs text-gray-400">{adminUser?.email}</p>
             </div>
-          ) : (
             <button
               onClick={handleLogout}
-              className="text-red-400 hover:text-red-300 p-2 mx-auto block"
+              className="text-red-400 hover:text-red-300 p-2"
               title="Đăng xuất"
             >
               <LogOut size={18} />
             </button>
-          )}
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 lg:${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
+      <main className="flex-1 lg:ml-64 transition-all duration-300">
         {/* Top Header */}
         <header className="bg-white shadow-sm sticky top-0 z-40">
           <div className="px-4 lg:px-6 py-4 flex items-center justify-between">
