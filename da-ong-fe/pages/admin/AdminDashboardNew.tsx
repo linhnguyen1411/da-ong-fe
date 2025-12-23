@@ -6,7 +6,9 @@ import {
   adminConfirmBooking, 
   adminCancelBooking,
   adminMarkContactRead,
-  adminUpdateRoomStatus
+  adminUpdateRoomStatus,
+  getRooms,
+  adminGetBookings
 } from '../../services/api';
 import { 
   Loader2, Calendar, Users, Mail, DoorOpen, 
@@ -32,6 +34,13 @@ const AdminDashboardNew: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [roomsByDate, setRoomsByDate] = useState<any[]>([]);
+  const [bookingsByDate, setBookingsByDate] = useState<any[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -40,7 +49,12 @@ const AdminDashboardNew: React.FC = () => {
       return;
     }
     fetchDashboard();
+    fetchRoomsByDate();
   }, [navigate]);
+
+  useEffect(() => {
+    fetchRoomsByDate();
+  }, [selectedDate]);
 
   const fetchDashboard = async () => {
     try {
@@ -57,6 +71,22 @@ const AdminDashboardNew: React.FC = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoomsByDate = async () => {
+    try {
+      setLoadingRooms(true);
+      const [rooms, bookings] = await Promise.all([
+        getRooms(selectedDate),
+        adminGetBookings({ date: selectedDate })
+      ]);
+      setRoomsByDate(rooms);
+      setBookingsByDate(bookings);
+    } catch (err: any) {
+      console.error('Error fetching rooms by date:', err);
+    } finally {
+      setLoadingRooms(false);
     }
   };
 
@@ -93,6 +123,7 @@ const AdminDashboardNew: React.FC = () => {
     try {
       await adminUpdateRoomStatus(id, status);
       fetchDashboard();
+      fetchRoomsByDate(); // Reload rooms after status update
     } catch (err) {
       alert('Có lỗi xảy ra');
     }
@@ -252,34 +283,101 @@ const AdminDashboardNew: React.FC = () => {
           {/* Room Status */}
           <div className="bg-white rounded-xl shadow-sm">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-dark flex items-center gap-2">
-                <DoorOpen size={20} className="text-primary" />
-                Trạng thái phòng
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-dark flex items-center gap-2">
+                  <DoorOpen size={20} className="text-primary" />
+                  Trạng thái phòng
+                </h2>
+                <button
+                  onClick={fetchRoomsByDate}
+                  disabled={loadingRooms}
+                  className="text-gray-500 hover:text-dark transition"
+                  title="Làm mới"
+                >
+                  <RefreshCw size={16} className={loadingRooms ? 'animate-spin' : ''} />
+                </button>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Chọn ngày:</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
             </div>
             <div className="p-4">
-              {data?.room_status && data.room_status.length > 0 ? (
-                <div className="space-y-3">
-                  {data.room_status.map((room: any) => (
-                    <div key={room.id} className="flex items-center justify-between">
-                      <span className="font-medium text-dark">{room.name}</span>
-                      <select
-                        value={room.status}
-                        onChange={(e) => handleUpdateRoomStatus(room.id, e.target.value)}
-                        className={`text-sm px-3 py-1 rounded-full font-bold border-0 cursor-pointer ${
-                          room.status === 'available' 
-                            ? 'bg-green-100 text-green-600' 
-                            : room.status === 'occupied'
-                            ? 'bg-red-100 text-red-600'
-                            : 'bg-yellow-100 text-yellow-600'
-                        }`}
-                      >
-                        <option value="available">Trống</option>
-                        <option value="occupied">Đang sử dụng</option>
-                        <option value="maintenance">Bảo trì</option>
-                      </select>
-                    </div>
-                  ))}
+              {loadingRooms ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                </div>
+              ) : roomsByDate.length > 0 ? (
+                <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                  {roomsByDate.map((room: any) => {
+                    const roomBookings = bookingsByDate.filter((b: any) => b.room_id === room.id);
+                    return (
+                      <div key={room.id} className="border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold text-dark">{room.name}</span>
+                          <div className="flex items-center gap-2">
+                            {room.booked_for_date ? (
+                              <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-bold">
+                                Đã đặt ({roomBookings.length})
+                              </span>
+                            ) : (
+                              <span className="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-bold">
+                                Trống
+                              </span>
+                            )}
+                            <select
+                              value={room.status || 'available'}
+                              onChange={(e) => handleUpdateRoomStatus(room.id, e.target.value)}
+                              className={`text-xs px-2 py-1 rounded-full font-bold border-0 cursor-pointer ${
+                                room.status === 'available' 
+                                  ? 'bg-green-100 text-green-600' 
+                                  : room.status === 'occupied'
+                                  ? 'bg-red-100 text-red-600'
+                                  : 'bg-yellow-100 text-yellow-600'
+                              }`}
+                            >
+                              <option value="available">Trống</option>
+                              <option value="occupied">Đang sử dụng</option>
+                              <option value="maintenance">Bảo trì</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          <p>Sức chứa: {room.capacity} người</p>
+                          {room.price_per_hour > 0 && (
+                            <p>Giá: {parseFloat(room.price_per_hour).toLocaleString('vi-VN')}đ/h</p>
+                          )}
+                        </div>
+                        {roomBookings.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-gray-200">
+                            <p className="text-xs font-bold text-gray-700 mb-1">Bookings:</p>
+                            {roomBookings.map((booking: any) => (
+                              <div key={booking.id} className="text-xs bg-gray-50 p-2 rounded mb-1">
+                                <p className="font-medium text-dark">{booking.customer_name}</p>
+                                <p className="text-gray-600">
+                                  {booking.booking_time} • {booking.party_size} khách
+                                </p>
+                                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${
+                                  booking.status === 'confirmed' 
+                                    ? 'bg-green-100 text-green-600'
+                                    : booking.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-600'
+                                    : 'bg-red-100 text-red-600'
+                                }`}>
+                                  {booking.status === 'confirmed' ? 'Đã xác nhận' : booking.status === 'pending' ? 'Chờ xác nhận' : 'Đã hủy'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-gray-400 text-center py-4">Chưa có phòng</p>
