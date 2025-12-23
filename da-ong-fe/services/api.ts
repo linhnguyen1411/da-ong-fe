@@ -27,6 +27,8 @@ export interface ApiMenuItem {
   position: number;
   category?: { id: number; name: string };
   is_market_price?: boolean;
+  product_code?: string;
+  unit?: string;
 }
 
 export interface ApiBestSeller {
@@ -319,6 +321,55 @@ export const adminDeleteMenuItem = (id: number) =>
     method: 'DELETE',
     headers: getAuthHeader(),
   });
+
+export const adminExportMenuItems = async () => {
+  const token = localStorage.getItem('admin_token');
+  if (!token) throw new Error('Unauthorized');
+  
+  const response = await fetch(`${API_BASE_ORIGIN}/api/v1/admin/menu_items/export`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (!response.ok) {
+    throw new Error('Export failed');
+  }
+  
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mon_an_${new Date().toISOString().split('T')[0]}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
+
+export const adminImportMenuItems = async (file: File) => {
+  const token = localStorage.getItem('admin_token');
+  if (!token) throw new Error('Unauthorized');
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(`${API_BASE_ORIGIN}/api/v1/admin/menu_items/import`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Import failed');
+  }
+  
+  return await response.json();
+};
 
 // Admin Bookings Dashboard
 export const adminGetBookings = (filters?: { status?: string; date?: string; room_id?: number }) => {

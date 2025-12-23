@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import {
   adminGetMenuItems, adminGetCategories, adminDeleteMenuItem,
+  adminExportMenuItems, adminImportMenuItems,
   ApiMenuItem, ApiCategory
 } from '../../services/api';
 import {
-  Plus, Edit2, Trash2, Search, Loader2, X, Save, Image, Upload, Images
+  Plus, Edit2, Trash2, Search, Loader2, X, Save, Image, Upload, Images, Download, FileUp
 } from 'lucide-react';
 
 import { API_BASE_ORIGIN } from '../../services/api';
@@ -27,7 +28,9 @@ const AdminMenuItems: React.FC = () => {
     category_id: 0,
     image_url: '',
     active: true,
-    is_market_price: false
+    is_market_price: false,
+    product_code: '',
+    unit: ''
   });
   
   // Multiple images support
@@ -36,7 +39,9 @@ const AdminMenuItems: React.FC = () => {
   const [existingImages, setExistingImages] = useState<{ id: number; url: string }[]>([]);
   
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchData();
@@ -67,7 +72,9 @@ const AdminMenuItems: React.FC = () => {
       category_id: categories[0]?.id || 0,
       image_url: '',
       active: true,
-      is_market_price: false
+      is_market_price: false,
+      product_code: '',
+      unit: ''
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -84,7 +91,9 @@ const AdminMenuItems: React.FC = () => {
       category_id: item.category_id,
       image_url: item.image_url || '',
       active: item.active,
-      is_market_price: item.is_market_price || false
+      is_market_price: item.is_market_price || false,
+      product_code: item.product_code || '',
+      unit: item.unit || ''
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -185,6 +194,8 @@ const AdminMenuItems: React.FC = () => {
       form.append('category_id', String(formData.category_id));
       form.append('active', String(formData.active));
       form.append('is_market_price', String(formData.is_market_price));
+      if (formData.product_code) form.append('product_code', formData.product_code);
+      if (formData.unit) form.append('unit', formData.unit);
       
       // Append all new images
       imageFiles.forEach(file => {
@@ -225,6 +236,37 @@ const AdminMenuItems: React.FC = () => {
       fetchData();
     } catch (err: any) {
       alert('Lỗi: ' + err.message);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      await adminExportMenuItems();
+      alert('Export thành công!');
+    } catch (err: any) {
+      alert('Lỗi export: ' + err.message);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!confirm('Import sẽ cập nhật các món ăn đã có (theo mã hàng hoặc tên). Tiếp tục?')) {
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      setImporting(true);
+      const result = await adminImportMenuItems(file);
+      alert(`Import thành công! Đã cập nhật ${result.updated_count} món ăn.${result.errors?.length ? `\nLỗi: ${result.errors.join('\n')}` : ''}`);
+      fetchData();
+    } catch (err: any) {
+      alert('Lỗi import: ' + err.message);
+    } finally {
+      setImporting(false);
+      e.target.value = '';
     }
   };
 
@@ -292,14 +334,37 @@ const AdminMenuItems: React.FC = () => {
             </select>
           </div>
 
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 bg-primary text-dark px-4 py-2 rounded-lg font-bold hover:bg-primary/90 transition w-full md:w-auto justify-center"
-          >
-            <Plus size={18} /> Thêm món mới
-          </button>
+          <div className="flex gap-2 w-full md:w-auto">
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition w-full md:w-auto justify-center"
+            >
+              <Download size={18} /> Export Excel
+            </button>
+            <button
+              onClick={() => importFileInputRef.current?.click()}
+              className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition w-full md:w-auto justify-center"
+            >
+              <FileUp size={18} /> Import Excel
+            </button>
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 bg-primary text-dark px-4 py-2 rounded-lg font-bold hover:bg-primary/90 transition w-full md:w-auto justify-center"
+            >
+              <Plus size={18} /> Thêm món mới
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Hidden file input for import */}
+      <input
+        ref={importFileInputRef}
+        type="file"
+        accept=".xlsx,.xls"
+        style={{ display: 'none' }}
+        onChange={handleImport}
+      />
 
       {/* Items Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -404,6 +469,29 @@ const AdminMenuItems: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mã hàng</label>
+                  <input
+                    type="text"
+                    value={formData.product_code}
+                    onChange={(e) => setFormData({ ...formData, product_code: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+                    placeholder="VD: GA001"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính</label>
+                  <input
+                    type="text"
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
+                    placeholder="VD: Phần, Đĩa, Kg..."
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tên món *</label>
                 <input
