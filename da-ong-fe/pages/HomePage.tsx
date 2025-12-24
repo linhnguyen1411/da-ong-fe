@@ -66,6 +66,7 @@ const HomePage: React.FC = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
         <div 
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{ 
@@ -73,26 +74,28 @@ const HomePage: React.FC = () => {
             }}
         >
              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/40"></div>
-             {/* Decorative elements - Food illustrations */}
-             <div className="absolute inset-0 overflow-hidden">
-                {/* Floating decorative circles */}
-                <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute bottom-32 right-20 w-40 h-40 bg-yellow-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-                <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-primary/15 rounded-full blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
-                
-                {/* Decorative SVG patterns - Utensils and food icons */}
-                <svg className="absolute top-10 right-10 w-24 h-24 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M6 2L6 22M18 2L18 22M2 6L22 6M2 18L22 18" strokeLinecap="round"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <svg className="absolute bottom-20 left-20 w-20 h-20 text-primary/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M12 2L15 8L22 9L17 14L18 21L12 18L6 21L7 14L2 9L9 8Z" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <svg className="absolute top-1/3 right-1/4 w-16 h-16 text-primary/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M12 6L12 12L16 14" strokeLinecap="round"/>
-                </svg>
-             </div>
+        </div>
+        
+        {/* SVG Pattern Overlay */}
+        <div 
+            className="absolute inset-0 z-[1] opacity-20"
+            style={{
+                backgroundImage: 'url("/da-va-ong.svg")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                mixBlendMode: 'overlay',
+            }}
+        ></div>
+        
+        {/* Additional decorative overlay for depth */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/60 via-transparent to-black/30"></div>
+        
+        {/* Floating decorative elements */}
+        <div className="absolute inset-0 z-[2] overflow-hidden">
+            <div className="absolute top-20 left-10 w-32 h-32 bg-primary/15 rounded-full blur-2xl animate-pulse"></div>
+            <div className="absolute bottom-32 right-20 w-40 h-40 bg-yellow-400/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-primary/10 rounded-full blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
           <span className="block text-primary text-lg md:text-xl font-medium tracking-[0.2em] mb-4 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
