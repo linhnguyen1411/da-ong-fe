@@ -20,23 +20,25 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 h-full flex items-center justify-between relative">
         {/* Logo: Đá (White) & Ong (Yellow/Primary) */}
         <Link to="/" className="flex items-center gap-2 relative z-10">
-          <img 
-            src="/LOGO-DA-ONG.png" 
-            alt="ĐÁ & ONG" 
-            className="h-12 w-auto object-contain"
-            onError={(e) => {
-              // Fallback to text if image fails
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              const parent = target.parentElement;
-              if (parent) {
-                const textFallback = document.createElement('span');
-                textFallback.className = 'text-2xl font-serif font-bold tracking-wider uppercase';
-                textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">& ONG</span>';
-                parent.appendChild(textFallback);
-              }
-            }}
-          />
+          <div className="bg-white rounded-lg p-2 border-2 border-primary/30 shadow-md">
+            <img 
+              src="/LOGO-DA-ONG.png" 
+              alt="ĐÁ & ONG" 
+              className="h-10 w-auto object-contain"
+              onError={(e) => {
+                // Fallback to text if image fails
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement?.parentElement;
+                if (parent) {
+                  const textFallback = document.createElement('span');
+                  textFallback.className = 'text-2xl font-serif font-bold tracking-wider uppercase';
+                  textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">& ONG</span>';
+                  parent.appendChild(textFallback);
+                }
+              }}
+            />
+          </div>
         </Link>
 
         {/* Desktop Nav - Absolutely Centered */}

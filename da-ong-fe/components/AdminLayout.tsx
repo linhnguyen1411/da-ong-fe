@@ -85,23 +85,25 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
         {/* Logo */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
           <Link to="/admin/dashboard" className="flex items-center gap-2">
-            <img 
-              src="/LOGO-DA-ONG.png" 
-              alt="ĐÁ & ONG" 
-              className="h-8 w-auto object-contain"
-              onError={(e) => {
-                // Fallback to text if image fails
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  const textFallback = document.createElement('span');
-                  textFallback.className = 'text-xl font-serif font-bold';
-                  textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">&amp; ONG</span>';
-                  parent.appendChild(textFallback);
-                }
-              }}
-            />
+            <div className="bg-white rounded-lg p-1.5 border-2 border-primary/30 shadow-md">
+              <img 
+                src="/LOGO-DA-ONG.png" 
+                alt="ĐÁ & ONG" 
+                className="h-6 w-auto object-contain"
+                onError={(e) => {
+                  // Fallback to text if image fails
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement?.parentElement;
+                  if (parent) {
+                    const textFallback = document.createElement('span');
+                    textFallback.className = 'text-xl font-serif font-bold';
+                    textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">&amp; ONG</span>';
+                    parent.appendChild(textFallback);
+                  }
+                }}
+              />
+            </div>
           </Link>
           <button
             onClick={handleToggleSidebar}
