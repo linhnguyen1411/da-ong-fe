@@ -69,19 +69,30 @@ const HomePage: React.FC = () => {
         <div 
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-                backgroundImage: 'url("https://images.unsplash.com/photo-1676656799516-56f87426839c?q=80&w=1920&auto=format&fit=crop")',
+                backgroundImage: 'url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3")',
             }}
         >
-             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30"></div>
-             {/* Abstract restaurant pattern overlay - Utensils and dining elements */}
-             <div 
-                className="absolute inset-0 opacity-15"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='restaurant-pattern' x='0' y='0' width='200' height='200' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='50' cy='50' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Ccircle cx='150' cy='50' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Ccircle cx='50' cy='150' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Ccircle cx='150' cy='150' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Cpath d='M100 20 L100 180 M20 100 L180 100' stroke='%23fbbf24' stroke-width='0.5' opacity='0.2'/%3E%3Cpath d='M30 30 L170 170 M170 30 L30 170' stroke='%23fbbf24' stroke-width='0.3' opacity='0.15'/%3E%3Cpath d='M80 40 Q100 60 120 40' stroke='%23fbbf24' stroke-width='1' fill='none' opacity='0.3'/%3E%3Cpath d='M80 160 Q100 140 120 160' stroke='%23fbbf24' stroke-width='1' fill='none' opacity='0.3'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23restaurant-pattern)'/%3E%3C/svg%3E")`,
-                    backgroundSize: '300px 300px',
-                    backgroundPosition: 'center',
-                }}
-             ></div>
+             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/40"></div>
+             {/* Decorative elements - Food illustrations */}
+             <div className="absolute inset-0 overflow-hidden">
+                {/* Floating decorative circles */}
+                <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute bottom-32 right-20 w-40 h-40 bg-yellow-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-primary/15 rounded-full blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+                
+                {/* Decorative SVG patterns - Utensils and food icons */}
+                <svg className="absolute top-10 right-10 w-24 h-24 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M6 2L6 22M18 2L18 22M2 6L22 6M2 18L22 18" strokeLinecap="round"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg className="absolute bottom-20 left-20 w-20 h-20 text-primary/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 2L15 8L22 9L17 14L18 21L12 18L6 21L7 14L2 9L9 8Z" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <svg className="absolute top-1/3 right-1/4 w-16 h-16 text-primary/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6L12 12L16 14" strokeLinecap="round"/>
+                </svg>
+             </div>
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
           <span className="block text-primary text-lg md:text-xl font-medium tracking-[0.2em] mb-4 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
