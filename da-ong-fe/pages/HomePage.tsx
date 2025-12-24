@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import DishCard from '../components/DishCard';
-import { getMenuItems, ApiMenuItem, getRooms, ApiRoom, API_BASE_ORIGIN } from '../services/api';
+import { getBestSellers, getDailySpecials, ApiBestSeller, ApiDailySpecial, getRooms, ApiRoom, ApiMenuItem, API_BASE_ORIGIN } from '../services/api';
 import { Dish, DishCategory } from '../types';
 import RoomCard from '../components/RoomCard';
 
@@ -36,11 +36,44 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const items = await getMenuItems();
-        const dishes = items.slice(0, 3).map(apiToDish);
+        // Fetch best sellers and daily specials
+        const [bestSellers, dailySpecials] = await Promise.all([
+          getBestSellers(),
+          getDailySpecials(true) // Only today's specials
+        ]);
+        
+        const dishes: Dish[] = [];
+        const addedIds = new Set<string>();
+        
+        // Add best sellers (limit to 3)
+        bestSellers.slice(0, 3).forEach(bs => {
+          if (bs.menu_item) {
+            const menuItem = bs.menu_item as ApiMenuItem;
+            const dishId = String(menuItem.id);
+            if (!addedIds.has(dishId)) {
+              dishes.push(apiToDish(menuItem));
+              addedIds.add(dishId);
+            }
+          }
+        });
+        
+        // Add daily specials if we don't have 3 yet
+        if (dishes.length < 3) {
+          dailySpecials.forEach(ds => {
+            if (ds.menu_item && dishes.length < 3) {
+              const menuItem = ds.menu_item as ApiMenuItem;
+              const dishId = String(menuItem.id);
+              if (!addedIds.has(dishId)) {
+                dishes.push(apiToDish(menuItem));
+                addedIds.add(dishId);
+              }
+            }
+          });
+        }
+        
         setFeatured(dishes);
       } catch (err) {
-        console.error('Error fetching menu items:', err);
+        console.error('Error fetching featured items:', err);
       } finally {
         setLoading(false);
       }
@@ -52,7 +85,8 @@ const HomePage: React.FC = () => {
     const fetchRooms = async () => {
       try {
         const data = await getRooms();
-        setRooms(data);
+        // Only show private rooms (VIP rooms)
+        setRooms(data.filter(r => r.room_type === 'private'));
       } catch (err) {
         console.error('Error fetching rooms:', err);
       } finally {
@@ -66,36 +100,15 @@ const HomePage: React.FC = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
+        {/* Background Image - User will replace this */}
         <div 
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-                backgroundImage: 'url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3")',
+                backgroundImage: 'url("/restaurant-background.jpg")', // User will replace this image
             }}
         >
-             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/40"></div>
-        </div>
-        
-        {/* SVG Pattern Overlay */}
-        <div 
-            className="absolute inset-0 z-[1] opacity-20"
-            style={{
-                backgroundImage: 'url("/da-va-ong.svg")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                mixBlendMode: 'overlay',
-            }}
-        ></div>
-        
-        {/* Additional decorative overlay for depth */}
-        <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/60 via-transparent to-black/30"></div>
-        
-        {/* Floating decorative elements */}
-        <div className="absolute inset-0 z-[2] overflow-hidden">
-            <div className="absolute top-20 left-10 w-32 h-32 bg-primary/15 rounded-full blur-2xl animate-pulse"></div>
-            <div className="absolute bottom-32 right-20 w-40 h-40 bg-yellow-400/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-primary/10 rounded-full blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+             {/* 60% overlay */}
+             <div className="absolute inset-0 bg-black/60"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
           <span className="block text-primary text-lg md:text-xl font-medium tracking-[0.2em] mb-4 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
@@ -149,6 +162,29 @@ const HomePage: React.FC = () => {
               <h2 className="text-4xl font-serif font-bold text-dark mt-2">Sơ Đồ Quán & Phòng</h2>
             </div>
           </div>
+          
+          {/* Sơ đồ nhà hàng - User will upload image */}
+          <div className="mb-12 rounded-lg overflow-hidden shadow-lg">
+            <img 
+              src="/restaurant-floor-plan.jpg" 
+              alt="Sơ đồ nhà hàng Đá & Ong" 
+              className="w-full h-auto object-cover"
+              onError={(e) => {
+                // Fallback if image not uploaded yet
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  const placeholder = document.createElement('div');
+                  placeholder.className = 'w-full h-96 bg-gray-100 flex items-center justify-center text-gray-400';
+                  placeholder.textContent = 'Sơ đồ nhà hàng sẽ được cập nhật';
+                  parent.appendChild(placeholder);
+                }
+              }}
+            />
+          </div>
+          
+          {/* Phòng VIP */}
           {loadingRooms ? (
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -156,18 +192,11 @@ const HomePage: React.FC = () => {
           ) : (
             <>
               <h3 className="text-2xl font-bold mb-4 text-primary">Phòng VIP</h3>
-              <div className="grid md:grid-cols-3 gap-8 mb-12">
-                {rooms.filter(r => r.room_type === 'private').map(room => (
-                  <RoomCard key={room.id} room={room} />
-                ))}
-                {rooms.filter(r => r.room_type === 'private').length === 0 && <div className="text-gray-400 italic">Chưa có phòng VIP</div>}
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-primary">Bàn Ngoài Trời</h3>
               <div className="grid md:grid-cols-3 gap-8">
-                {rooms.filter(r => r.room_type === 'outdoor').map(room => (
+                {rooms.map(room => (
                   <RoomCard key={room.id} room={room} />
                 ))}
-                {rooms.filter(r => r.room_type === 'outdoor').length === 0 && <div className="text-gray-400 italic">Chưa có bàn ngoài trời</div>}
+                {rooms.length === 0 && <div className="text-gray-400 italic">Chưa có phòng VIP</div>}
               </div>
             </>
           )}
