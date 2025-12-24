@@ -45,7 +45,18 @@ const BookingPage: React.FC = () => {
         let cartFromStorage = {};
         try {
             const stored = localStorage.getItem('cartItems');
-            cartFromStorage = stored ? JSON.parse(stored) : {};
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Check if cartItems has timestamp and if it's expired (15 minutes)
+                if (parsed._ts && Date.now() - parsed._ts > 15 * 60 * 1000) {
+                    localStorage.removeItem('cartItems');
+                    cartFromStorage = {};
+                } else {
+                    // Return cart items without timestamp
+                    const { _ts, ...items } = parsed;
+                    cartFromStorage = items;
+                }
+            }
         } catch {}
         // Handle auto-expiry after 15 minutes
         const pendingRaw = localStorage.getItem('pendingBooking');
@@ -373,10 +384,21 @@ const BookingPage: React.FC = () => {
 
     try {
         // Build booking items from merged dishes (selectedDishes + cartItems)
-        const bookingItems = Object.entries(mergedDishes).map(([id, qty]) => ({
-          menu_item_id: parseInt(id),
-          quantity: qty as number,
-        }));
+        // Filter out invalid menu_item_ids (null, undefined, NaN, or non-existent items)
+        const bookingItems = Object.entries(mergedDishes)
+          .map(([id, qty]) => {
+            const menuItemId = parseInt(id);
+            // Validate: must be a valid number and exist in apiMenuItems
+            if (isNaN(menuItemId) || !apiMenuItems.find(item => item.id === menuItemId)) {
+              console.warn(`Invalid menu_item_id: ${id}, skipping`);
+              return null;
+            }
+            return {
+              menu_item_id: menuItemId,
+              quantity: qty as number,
+            };
+          })
+          .filter((item): item is { menu_item_id: number; quantity: number } => item !== null);
 
         await createBookingApi({
           room_id: booking.selectedRoom ? parseInt(booking.selectedRoom.id) : undefined,

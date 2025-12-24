@@ -73,6 +73,15 @@ const HomePage: React.FC = () => {
             }}
         >
              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30"></div>
+             {/* Abstract restaurant pattern overlay - Utensils and dining elements */}
+             <div 
+                className="absolute inset-0 opacity-15"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='restaurant-pattern' x='0' y='0' width='200' height='200' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='50' cy='50' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Ccircle cx='150' cy='50' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Ccircle cx='50' cy='150' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Ccircle cx='150' cy='150' r='3' fill='%23fbbf24' opacity='0.4'/%3E%3Cpath d='M100 20 L100 180 M20 100 L180 100' stroke='%23fbbf24' stroke-width='0.5' opacity='0.2'/%3E%3Cpath d='M30 30 L170 170 M170 30 L30 170' stroke='%23fbbf24' stroke-width='0.3' opacity='0.15'/%3E%3Cpath d='M80 40 Q100 60 120 40' stroke='%23fbbf24' stroke-width='1' fill='none' opacity='0.3'/%3E%3Cpath d='M80 160 Q100 140 120 160' stroke='%23fbbf24' stroke-width='1' fill='none' opacity='0.3'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23restaurant-pattern)'/%3E%3C/svg%3E")`,
+                    backgroundSize: '300px 300px',
+                    backgroundPosition: 'center',
+                }}
+             ></div>
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
           <span className="block text-primary text-lg md:text-xl font-medium tracking-[0.2em] mb-4 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
