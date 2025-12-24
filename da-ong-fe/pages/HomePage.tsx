@@ -163,14 +163,14 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           
-          {/* Sơ đồ nhà hàng - User will upload image */}
-          <div className="mb-12 rounded-lg overflow-hidden shadow-lg">
+          {/* Sơ đồ nhà hàng - SVG */}
+          <div className="mb-12 rounded-lg overflow-hidden shadow-lg bg-white">
             <img 
-              src="/restaurant-floor-plan.jpg" 
+              src="/da-va-ong.svg" 
               alt="Sơ đồ nhà hàng Đá & Ong" 
-              className="w-full h-auto object-cover"
+              className="w-full h-auto object-contain"
               onError={(e) => {
-                // Fallback if image not uploaded yet
+                // Fallback if SVG not found
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 const parent = target.parentElement;
