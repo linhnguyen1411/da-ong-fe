@@ -79,6 +79,9 @@ const AdminDashboardNew: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
+    // Force clear state when date changes
+    setRoomsByDate([]);
+    setBookingsByDate([]);
     fetchRoomsByDate();
   }, [selectedDate]);
 
@@ -103,14 +106,40 @@ const AdminDashboardNew: React.FC = () => {
   const fetchRoomsByDate = async () => {
     try {
       setLoadingRooms(true);
+      // Clear previous data first to avoid stale state
+      setRoomsByDate([]);
+      setBookingsByDate([]);
+      
+      // Only fetch if date is selected
+      if (!selectedDate) {
+        setLoadingRooms(false);
+        return;
+      }
+      
       const [rooms, bookings] = await Promise.all([
-        getRooms(selectedDate),
+        getRooms(selectedDate), // Pass date to API
         adminGetBookings({ date: selectedDate })
       ]);
-      setRoomsByDate(rooms);
-      setBookingsByDate(bookings);
+      
+      // Log for debugging
+      console.log(`[fetchRoomsByDate] Date: ${selectedDate}, Rooms:`, rooms?.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        booked_for_date: r.booked_for_date,
+        in_use: r.in_use,
+        status: r.status,
+        bookings_count: r.bookings?.length || 0,
+        bookings: r.bookings
+      })));
+      
+      // Ensure rooms are fresh for the selected date - create new array to force re-render
+      setRoomsByDate(rooms ? [...rooms] : []);
+      setBookingsByDate(bookings ? [...bookings] : []);
     } catch (err: any) {
       console.error('Error fetching rooms by date:', err);
+      // Clear on error to avoid showing stale data
+      setRoomsByDate([]);
+      setBookingsByDate([]);
     } finally {
       setLoadingRooms(false);
     }
@@ -228,6 +257,7 @@ const AdminDashboardNew: React.FC = () => {
     try {
       await adminConfirmBooking(id);
       fetchDashboard();
+      fetchRoomsByDate(); // Refresh rooms to show updated status
     } catch (err) {
       alert('Có lỗi xảy ra');
     }
@@ -282,16 +312,16 @@ const AdminDashboardNew: React.FC = () => {
   };
 
   const getRoomStatusColor = (room: any) => {
-    if (room.booked_for_date) return 'bg-red-500'; // Đã đặt - đỏ
-    if (room.status === 'occupied') return 'bg-orange-500'; // Đang sử dụng - cam
-    if (room.status === 'maintenance') return 'bg-yellow-500'; // Bảo trì - vàng
+    if (room.status === 'maintenance') return 'bg-yellow-500'; // Bảo trì - vàng (block không được đặt)
+    if (room.in_use) return 'bg-orange-500'; // Đang sử dụng - cam (từ room_schedules)
+    if (room.booked_for_date) return 'bg-red-500'; // Đã đặt - đỏ (từ room_schedules)
     return 'bg-gray-200'; // Trống - xám nhạt (sẽ hiển thị icon người)
   };
 
   const getRoomStatusText = (room: any) => {
-    if (room.booked_for_date) return 'Đã đặt';
-    if (room.status === 'occupied') return 'Đang sử dụng';
     if (room.status === 'maintenance') return 'Bảo trì';
+    if (room.in_use) return 'Đang sử dụng';
+    if (room.booked_for_date) return 'Đã đặt';
     return 'Trống';
   };
 
@@ -303,7 +333,8 @@ const AdminDashboardNew: React.FC = () => {
   };
 
   const isRoomAvailable = (room: any) => {
-    return !room.booked_for_date && room.status === 'available';
+    // Phòng trống khi: không bảo trì, không đang sử dụng, không có booking
+    return room.status === 'available' && !room.in_use && !room.booked_for_date;
   };
 
   if (loading) {
@@ -486,11 +517,26 @@ const AdminDashboardNew: React.FC = () => {
                       );
                     }
                     return filteredRooms.map((room: any) => {
-                      const statusColor = getRoomStatusColor(room);
-                      const statusText = getRoomStatusText(room);
-                      const isAvailable = isRoomAvailable(room);
+                      // Force check booked_for_date from current state - ensure it's boolean
+                      const bookedForDate = room.booked_for_date === true;
+                      const bookings = Array.isArray(room.bookings) ? room.bookings : [];
+                      
+                      // Debug log for room 2
+                      if (room.id === 2) {
+                        console.log('[Room 2 Debug]', {
+                          booked_for_date: room.booked_for_date,
+                          bookedForDate,
+                          in_use: room.in_use,
+                          status: room.status,
+                          bookings_count: bookings.length
+                        });
+                      }
+                      
+                      // Recalculate status based on fresh data - booked_for_date takes priority
+                      const statusColor = bookedForDate ? 'bg-red-500' : getRoomStatusColor(room);
+                      const statusText = bookedForDate ? 'Đã đặt' : getRoomStatusText(room);
+                      const isAvailable = !bookedForDate && room.status === 'available';
                       const hasSound = room.has_sound_system || room.has_karaoke;
-                      const bookings = room.bookings || [];
                       
                       // Build tooltip text for bookings
                       const tooltipText = bookings.length > 0 

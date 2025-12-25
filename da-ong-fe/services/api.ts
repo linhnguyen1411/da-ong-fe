@@ -70,7 +70,8 @@ export interface ApiRoom {
   has_projector: boolean;
   has_karaoke: boolean;
   price_per_hour: string;
-  status: 'available' | 'occupied' | 'maintenance';
+  status: 'available' | 'maintenance'; // Chỉ 2 loại: available và maintenance
+  in_use?: boolean; // Đang sử dụng (tính từ room_schedules)
   room_type: 'private' | 'outdoor';
   position: number;
   active: boolean;
@@ -403,6 +404,16 @@ export const adminCancelBooking = (id: number) =>
   apiCall<any>(`/admin/bookings/${id}/cancel`, {
     method: 'PATCH',
     headers: getAuthHeader(),
+  });
+
+export const adminGetBooking = (id: number) =>
+  apiCall<any>(`/admin/bookings/${id}`, { headers: getAuthHeader() });
+
+export const adminUpdateBooking = (id: number, data: Partial<ApiBooking>) =>
+  apiCall<any>(`/admin/bookings/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
   });
 
 // Admin Contacts

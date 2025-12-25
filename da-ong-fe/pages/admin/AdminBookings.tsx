@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import {
-  adminGetBookings, adminConfirmBooking, adminCancelBooking, adminGetRooms, ApiRoom
+  adminGetBookings, adminConfirmBooking, adminCancelBooking, adminGetRooms, ApiRoom,
+  adminGetBooking, adminUpdateBooking, getMenuItems, ApiMenuItem
 } from '../../services/api';
 import {
-  Search, Loader2, CheckCircle, XCircle, Clock, Calendar, Filter, Users, Phone
+  Search, Loader2, CheckCircle, XCircle, Clock, Calendar, Filter, Users, Phone, Edit2, X, Plus, Minus
 } from 'lucide-react';
 import { formatDateTime } from '../../utils/dateFormat';
 
@@ -22,9 +23,16 @@ interface Booking {
   created_at: string;
 }
 
+interface BookingItem {
+  menu_item_id: number;
+  quantity: number;
+  menu_item?: ApiMenuItem;
+}
+
 const AdminBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<ApiRoom[]>([]);
+  const [menuItems, setMenuItems] = useState<ApiMenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Filters
@@ -33,6 +41,23 @@ const AdminBookings: React.FC = () => {
   const [roomFilter, setRoomFilter] = useState<string>('');
   const [search, setSearch] = useState('');
 
+  // Edit modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [editForm, setEditForm] = useState({
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    booking_date: '',
+    booking_time: '',
+    party_size: 1,
+    room_id: '',
+    notes: '',
+    status: 'pending' as 'pending' | 'confirmed' | 'cancelled' | 'completed',
+    booking_items: [] as BookingItem[]
+  });
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, [statusFilter, dateFilter, roomFilter]);
@@ -40,16 +65,18 @@ const AdminBookings: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [bookingsData, roomsData] = await Promise.all([
+      const [bookingsData, roomsData, menuItemsData] = await Promise.all([
         adminGetBookings({
           status: statusFilter || undefined,
           date: dateFilter || undefined,
           room_id: roomFilter ? parseInt(roomFilter) : undefined
         }),
-        adminGetRooms()
+        adminGetRooms(),
+        getMenuItems()
       ]);
       setBookings(bookingsData);
       setRooms(roomsData);
+      setMenuItems(menuItemsData);
     } catch (err) {
       console.error('Error fetching bookings:', err);
     } finally {
@@ -74,6 +101,108 @@ const AdminBookings: React.FC = () => {
     } catch (err: any) {
       alert('Lỗi: ' + err.message);
     }
+  };
+
+  const handleEdit = async (id: number) => {
+    try {
+      const booking = await adminGetBooking(id);
+      setEditingBooking(booking);
+      setEditForm({
+        customer_name: booking.customer_name || '',
+        customer_phone: booking.customer_phone || '',
+        customer_email: booking.customer_email || '',
+        booking_date: booking.booking_date || '',
+        booking_time: booking.booking_time || '',
+        party_size: booking.party_size || 1,
+        room_id: booking.room_id ? String(booking.room_id) : '',
+        notes: booking.notes || '',
+        status: booking.status || 'pending',
+        booking_items: booking.booking_items?.map((item: any) => ({
+          menu_item_id: item.menu_item_id || item.menu_item?.id,
+          quantity: item.quantity || 1,
+          menu_item: item.menu_item
+        })) || []
+      });
+      setShowEditModal(true);
+    } catch (err: any) {
+      alert('Lỗi: ' + err.message);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingBooking) return;
+    if (!editForm.customer_phone || !editForm.booking_date || !editForm.booking_time) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc (SĐT, Ngày, Giờ)');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await adminUpdateBooking(editingBooking.id, {
+        customer_name: editForm.customer_name,
+        customer_phone: editForm.customer_phone,
+        customer_email: editForm.customer_email,
+        booking_date: editForm.booking_date,
+        booking_time: editForm.booking_time,
+        party_size: editForm.party_size,
+        room_id: editForm.room_id ? parseInt(editForm.room_id) : undefined,
+        notes: editForm.notes,
+        status: editForm.status,
+        booking_items_attributes: editForm.booking_items.map(item => ({
+          menu_item_id: item.menu_item_id,
+          quantity: item.quantity
+        }))
+      });
+      setShowEditModal(false);
+      setEditingBooking(null);
+      fetchData();
+    } catch (err: any) {
+      alert('Lỗi: ' + (err.message || 'Không thể cập nhật booking'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddMenuItem = (menuItemId: number) => {
+    const existing = editForm.booking_items.find(item => item.menu_item_id === menuItemId);
+    if (existing) {
+      setEditForm({
+        ...editForm,
+        booking_items: editForm.booking_items.map(item =>
+          item.menu_item_id === menuItemId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      });
+    } else {
+      const menuItem = menuItems.find(m => m.id === menuItemId);
+      setEditForm({
+        ...editForm,
+        booking_items: [...editForm.booking_items, { menu_item_id: menuItemId, quantity: 1, menu_item: menuItem }]
+      });
+    }
+  };
+
+  const handleRemoveMenuItem = (menuItemId: number) => {
+    setEditForm({
+      ...editForm,
+      booking_items: editForm.booking_items.filter(item => item.menu_item_id !== menuItemId)
+    });
+  };
+
+  const handleUpdateMenuItemQuantity = (menuItemId: number, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveMenuItem(menuItemId);
+      return;
+    }
+    setEditForm({
+      ...editForm,
+      booking_items: editForm.booking_items.map(item =>
+        item.menu_item_id === menuItemId
+          ? { ...item, quantity }
+          : item
+      )
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -276,6 +405,13 @@ const AdminBookings: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(booking.id)}
+                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                          title="Sửa"
+                        >
+                          <Edit2 size={18} />
+                        </button>
                         {booking.status === 'pending' && (
                           <>
                             <button
@@ -320,6 +456,212 @@ const AdminBookings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-dark">Sửa đặt bàn</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingBooking(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6 space-y-4">
+              {/* Customer Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tên khách hàng *</label>
+                  <input
+                    type="text"
+                    value={editForm.customer_name}
+                    onChange={(e) => setEditForm({ ...editForm, customer_name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
+                  <input
+                    type="tel"
+                    value={editForm.customer_phone}
+                    onChange={(e) => setEditForm({ ...editForm, customer_phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={editForm.customer_email}
+                    onChange={(e) => setEditForm({ ...editForm, customer_email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Số khách *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editForm.party_size}
+                    onChange={(e) => setEditForm({ ...editForm, party_size: parseInt(e.target.value) || 1 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Booking Date & Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ngày đặt *</label>
+                  <input
+                    type="date"
+                    value={editForm.booking_date}
+                    onChange={(e) => setEditForm({ ...editForm, booking_date: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Giờ đặt *</label>
+                  <input
+                    type="time"
+                    value={editForm.booking_time}
+                    onChange={(e) => setEditForm({ ...editForm, booking_time: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Room & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phòng</label>
+                  <select
+                    value={editForm.room_id}
+                    onChange={(e) => setEditForm({ ...editForm, room_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Chưa chọn phòng</option>
+                    {rooms.map(room => (
+                      <option key={room.id} value={room.id}>{room.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="pending">Chờ xác nhận</option>
+                    <option value="confirmed">Đã xác nhận</option>
+                    <option value="cancelled">Đã hủy</option>
+                    <option value="completed">Hoàn thành</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                <textarea
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+
+              {/* Menu Items */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Món ăn đã chọn</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  {editForm.booking_items.length > 0 ? (
+                    editForm.booking_items.map((item) => {
+                      const menuItem = item.menu_item || menuItems.find(m => m.id === item.menu_item_id);
+                      return (
+                        <div key={item.menu_item_id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{menuItem?.name || `Món #${item.menu_item_id}`}</p>
+                            <p className="text-xs text-gray-500">{menuItem?.price ? `${parseInt(menuItem.price).toLocaleString('vi-VN')}đ` : ''}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleUpdateMenuItemQuantity(item.menu_item_id, item.quantity - 1)}
+                              className="p-1 text-gray-500 hover:text-dark"
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="w-8 text-center font-bold">{item.quantity}</span>
+                            <button
+                              onClick={() => handleUpdateMenuItemQuantity(item.menu_item_id, item.quantity + 1)}
+                              className="p-1 text-gray-500 hover:text-dark"
+                            >
+                              <Plus size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleRemoveMenuItem(item.menu_item_id)}
+                              className="p-1 text-red-500 hover:text-red-700 ml-2"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-400 text-sm text-center py-2">Chưa có món ăn nào</p>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Thêm món ăn</label>
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleAddMenuItem(parseInt(e.target.value));
+                        e.target.value = '';
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Chọn món ăn...</option>
+                    {menuItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name} - {parseInt(item.price).toLocaleString('vi-VN')}đ</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  className="flex-1 bg-primary text-dark font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition disabled:opacity-50"
+                >
+                  {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingBooking(null);
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };

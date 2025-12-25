@@ -8,10 +8,9 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
-        hmr: {
-          protocol: 'ws',
-          host: 'localhost',
-        },
+        strictPort: false,
+        // Tắt HMR để tránh lỗi 426
+        hmr: false,
       },
       plugins: [react()],
       define: {
