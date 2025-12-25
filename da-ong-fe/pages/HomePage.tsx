@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import DishCard from '../components/DishCard';
 import { getBestSellers, getDailySpecials, ApiBestSeller, ApiDailySpecial, getRooms, ApiRoom, ApiMenuItem, API_BASE_ORIGIN } from '../services/api';
 import { Dish, DishCategory } from '../types';
@@ -32,6 +32,8 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [rooms, setRooms] = useState<ApiRoom[]>([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const floorPlanRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -100,22 +102,22 @@ const HomePage: React.FC = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image - User will replace this */}
+        {/* Background Image */}
         <div 
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-                backgroundImage: 'url("/restaurant-background.jpg")', // User will replace this image
+                backgroundImage: 'url("/background.jpg")',
             }}
         >
              {/* 60% overlay */}
              <div className="absolute inset-0 bg-black/60"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
-          <span className="block text-primary text-lg md:text-xl font-medium tracking-[0.2em] mb-4 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight animate-fadeInUp drop-shadow-2xl" style={{animationDelay: '0.2s'}}>
+          <span className="block text-primary text-xl md:text-2xl lg:text-3xl font-medium tracking-[0.2em] mb-6 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold mb-8 leading-tight animate-fadeInUp drop-shadow-2xl" style={{animationDelay: '0.2s'}}>
             Thưởng Thức <br/> <span className="text-primary">Tinh Hoa</span> Ẩm Thực
           </h1>
-          <p className="max-w-2xl mx-auto text-gray-200 text-lg mb-10 animate-fadeInUp drop-shadow-md font-medium" style={{animationDelay: '0.4s'}}>
+          <p className="max-w-3xl mx-auto text-gray-200 text-xl md:text-2xl mb-12 animate-fadeInUp drop-shadow-md font-medium" style={{animationDelay: '0.4s'}}>
             Sự kết hợp hoàn hảo giữa hương vị truyền thống Việt Nam và không gian hiện đại giữa lòng Đà Nẵng.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center animate-fadeInUp" style={{animationDelay: '0.6s'}}>
@@ -163,25 +165,57 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           
-          {/* Sơ đồ nhà hàng - SVG */}
-          <div className="mb-12 rounded-lg overflow-hidden shadow-lg bg-white">
-            <img 
-              src="/da-va-ong.svg" 
-              alt="Sơ đồ nhà hàng Đá & Ong" 
-              className="w-full h-auto object-contain"
-              onError={(e) => {
-                // Fallback if SVG not found
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  const placeholder = document.createElement('div');
-                  placeholder.className = 'w-full h-96 bg-gray-100 flex items-center justify-center text-gray-400';
-                  placeholder.textContent = 'Sơ đồ nhà hàng sẽ được cập nhật';
-                  parent.appendChild(placeholder);
-                }
-              }}
-            />
+          {/* Sơ đồ nhà hàng - SVG với zoom controls */}
+          <div className="mb-12 rounded-lg overflow-hidden shadow-lg bg-white relative">
+            <div className="absolute top-4 right-4 z-10 flex gap-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md">
+              <button
+                onClick={() => setZoomLevel(prev => Math.min(prev + 0.2, 3))}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Phóng to"
+              >
+                <ZoomIn size={20} className="text-dark" />
+              </button>
+              <button
+                onClick={() => setZoomLevel(prev => Math.max(prev - 0.2, 0.5))}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Thu nhỏ"
+              >
+                <ZoomOut size={20} className="text-dark" />
+              </button>
+              <button
+                onClick={() => setZoomLevel(1)}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Đặt lại"
+              >
+                <RotateCcw size={20} className="text-dark" />
+              </button>
+            </div>
+            <div 
+              ref={floorPlanRef}
+              className="overflow-auto max-h-[600px] bg-gray-50"
+              style={{ cursor: zoomLevel > 1 ? 'grab' : 'default' }}
+            >
+              <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center' }}>
+                <img 
+                  src="/da-va-ong.svg" 
+                  alt="Sơ đồ nhà hàng Đá & Ong" 
+                  className="w-full h-auto object-contain"
+                  style={{ maxWidth: '100%' }}
+                  onError={(e) => {
+                    // Fallback if SVG not found
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'w-full h-96 bg-gray-100 flex items-center justify-center text-gray-400';
+                      placeholder.textContent = 'Sơ đồ nhà hàng sẽ được cập nhật';
+                      parent.appendChild(placeholder);
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
           
           {/* Phòng VIP */}

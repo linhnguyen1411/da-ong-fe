@@ -295,6 +295,13 @@ const AdminDashboardNew: React.FC = () => {
     return 'Trống';
   };
 
+  // Helper function to get the last part of room name (after last space)
+  const getShortRoomName = (roomName: string): string => {
+    if (!roomName) return '';
+    const parts = roomName.trim().split(/\s+/);
+    return parts[parts.length - 1] || roomName;
+  };
+
   const isRoomAvailable = (room: any) => {
     return !room.booked_for_date && room.status === 'available';
   };
@@ -463,7 +470,7 @@ const AdminDashboardNew: React.FC = () => {
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 </div>
               ) : roomsByDate.length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-5 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
                   {(() => {
                     const filteredRooms = roomsByDate.filter((room: any) => 
                       roomSearchTerm === '' || 
@@ -488,34 +495,36 @@ const AdminDashboardNew: React.FC = () => {
                         <button
                           key={room.id}
                           onClick={() => handleRoomClick(room)}
-                          className="flex flex-col items-center gap-1.5 sm:gap-2 p-2 sm:p-3 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
+                          className="flex flex-col items-center gap-2 sm:gap-2.5 p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
                         >
                           {/* Icon phòng - luôn hiển thị DoorOpen */}
-                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${isAvailable ? 'bg-gray-200' : statusColor} flex items-center justify-center ${isAvailable ? '' : 'text-white'} font-bold shadow-md group-hover:scale-110 transition-transform`}>
-                            <DoorOpen size={20} className={`sm:w-6 sm:h-6 ${isAvailable ? 'text-gray-700' : ''}`} />
+                          <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg ${isAvailable ? 'bg-gray-200' : statusColor} flex items-center justify-center ${isAvailable ? '' : 'text-white'} font-bold shadow-md group-hover:scale-110 transition-transform`}>
+                            <DoorOpen size={24} className={`sm:w-7 sm:h-7 md:w-8 md:h-8 ${isAvailable ? 'text-gray-700' : ''}`} />
                           </div>
                           <div className="text-center w-full">
-                            <p className="font-bold text-xs sm:text-sm text-dark truncate">{room.name}</p>
+                            <p className="font-bold text-sm sm:text-base text-dark truncate" title={room.name}>
+                              {getShortRoomName(room.name)}
+                            </p>
                             {isAvailable ? (
                               // Phòng trống - hiển thị icon người + số lượng và các icon tiện ích
-                              <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 flex-wrap">
-                                <div className="flex items-center gap-0.5">
-                                  <Users size={10} className="text-gray-600 sm:w-3 sm:h-3" />
-                                  <span className="text-[10px] sm:text-xs font-bold text-gray-600">{room.capacity || 0}</span>
+                              <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                  <Users size={14} className="text-gray-600 sm:w-4 sm:h-4" />
+                                  <span className="text-xs sm:text-sm font-bold text-gray-600">{room.capacity || 0}</span>
                                 </div>
                                 {hasSound && (
-                                  <Volume2 size={10} className="text-blue-500 sm:w-3 sm:h-3" title="Có âm thanh" />
+                                  <Volume2 size={14} className="text-blue-500 sm:w-4 sm:h-4" title="Có âm thanh" />
                                 )}
                                 {room.has_projector && (
-                                  <Monitor size={10} className="text-purple-500 sm:w-3 sm:h-3" title="Có máy chiếu" />
+                                  <Monitor size={14} className="text-purple-500 sm:w-4 sm:h-4" title="Có máy chiếu" />
                                 )}
                                 {!hasSound && !room.has_projector && (
-                                  <span className="text-[10px] sm:text-xs text-gray-400">-</span>
+                                  <span className="text-xs sm:text-sm text-gray-400">-</span>
                                 )}
                               </div>
                             ) : (
                               // Phòng đã đặt/đang dùng/bảo trì - hiển thị trạng thái
-                              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{statusText}</p>
+                              <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-1.5">{statusText}</p>
                             )}
                           </div>
                         </button>
