@@ -490,13 +490,19 @@ const AdminDashboardNew: React.FC = () => {
                       const statusText = getRoomStatusText(room);
                       const isAvailable = isRoomAvailable(room);
                       const hasSound = room.has_sound_system || room.has_karaoke;
+                      const bookings = room.bookings || [];
+                      
+                      // Build tooltip text for bookings
+                      const tooltipText = bookings.length > 0 
+                        ? `Đã đặt:\n${bookings.map((b: any) => `• ${b.booking_time} - ${b.customer_name} (${b.party_size} người)`).join('\n')}`
+                        : null;
                       
                       return (
-                        <button
-                          key={room.id}
-                          onClick={() => handleRoomClick(room)}
-                          className="flex flex-col items-center gap-2 sm:gap-2.5 p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md group"
-                        >
+                        <div key={room.id} className="relative group">
+                          <button
+                            onClick={() => handleRoomClick(room)}
+                            className="flex flex-col items-center gap-2 sm:gap-2.5 p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-primary transition-all hover:shadow-md w-full"
+                          >
                           {/* Icon phòng - luôn hiển thị DoorOpen */}
                           <div className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg ${isAvailable ? 'bg-gray-200' : statusColor} flex items-center justify-center ${isAvailable ? '' : 'text-white'} font-bold shadow-md group-hover:scale-110 transition-transform`}>
                             <DoorOpen size={24} className={`sm:w-7 sm:h-7 md:w-8 md:h-8 ${isAvailable ? 'text-gray-700' : ''}`} />
@@ -528,6 +534,14 @@ const AdminDashboardNew: React.FC = () => {
                             )}
                           </div>
                         </button>
+                        {/* Tooltip hiển thị thông tin booking khi hover */}
+                        {tooltipText && (
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-pre-line max-w-xs text-center">
+                            {tooltipText}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        )}
+                      </div>
                       );
                     });
                   })()}

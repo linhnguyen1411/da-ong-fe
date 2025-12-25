@@ -37,18 +37,20 @@ export const formatDateTime = (dateStr: string | null | undefined, timeStr?: str
   if (timeStr) {
     try {
       if (timeStr.includes('T') || timeStr.includes('Z')) {
-        // ISO string - extract time part
+        // ISO string - extract time part and convert to Vietnam timezone (UTC+7)
         const timeDate = new Date(timeStr);
         if (!isNaN(timeDate.getTime())) {
-          const hours = String(timeDate.getHours()).padStart(2, '0');
-          const minutes = String(timeDate.getMinutes()).padStart(2, '0');
+          // Convert to Vietnam timezone (UTC+7)
+          const vnTime = new Date(timeDate.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+          const hours = String(vnTime.getHours()).padStart(2, '0');
+          const minutes = String(vnTime.getMinutes()).padStart(2, '0');
           time = `${hours}:${minutes}`;
         } else {
           // Try to parse as time string
           time = timeStr.split(':').slice(0, 2).join(':');
         }
       } else if (timeStr.match(/^\d{2}:\d{2}/)) {
-        // Time string like "18:00"
+        // Time string like "18:00" - use directly (assumed to be in Vietnam timezone)
         time = timeStr;
       } else {
         // Try to extract time from string

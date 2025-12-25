@@ -79,6 +79,12 @@ export interface ApiRoom {
   thumbnail_url?: string;
   images?: { id: number; url: string }[];
   booked_for_date?: boolean; // true if room has booking on the requested date
+  bookings?: Array<{
+    id: number;
+    customer_name: string;
+    booking_time: string; // Format: "HH:MM"
+    party_size: number;
+  }>;
 }
 
 export interface ApiRoomImage {
