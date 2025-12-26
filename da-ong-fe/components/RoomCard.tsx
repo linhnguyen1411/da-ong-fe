@@ -22,7 +22,11 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
         {room.has_projector && <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">Projector</span>}
         {room.has_sound_system && <span className="bg-green-100 text-green-700 px-2 py-1 rounded">Âm thanh</span>}
       </div>
-      <div className="font-semibold text-primary text-lg mb-1">{room.price_per_hour} / giờ</div>
+      {room.price_per_hour && parseFloat(room.price_per_hour) > 0 && (
+        <div className="font-semibold text-primary text-lg mb-1">
+          {Math.floor(parseFloat(room.price_per_hour)).toLocaleString()}đ
+        </div>
+      )}
       <div className="text-xs text-gray-400">Trạng thái: {room.status === 'available' ? 'Còn trống' : room.status === 'occupied' ? 'Đã đặt' : 'Bảo trì'}</div>
     </div>
   );

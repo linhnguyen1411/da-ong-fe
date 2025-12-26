@@ -17,14 +17,14 @@ const getFullUrl = (url: string | undefined): string => {
 const apiToDish = (item: ApiMenuItem): Dish => ({
   id: String(item.id),
   name: item.name,
-  price: parseInt(item.price),
+  price: parseInt(item.price) || 0,
   description: item.description || '',
   image: getFullUrl(item.thumbnail_url || item.image_url),
   images: item.images_urls?.map(url => getFullUrl(url)) || [],
   category: DishCategory.MAIN,
   isBestSeller: false,
   isRecommended: false,
-  isMarketPrice: item.is_market_price || false,
+  isMarketPrice: item.is_market_price === true || parseInt(item.price) === 0,
 });
 
 const HomePage: React.FC = () => {

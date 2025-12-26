@@ -630,7 +630,7 @@ const BookingPage: React.FC = () => {
                         <div className="flex justify-between text-sm text-gray-500 mb-2">
                             <span>Sức chứa: {room.capacity} khách</span>
                             {room.pricePerHour > 0 ? (
-                                <span className="text-primary font-bold">{room.pricePerHour.toLocaleString()}đ/h</span>
+                                <span className="text-primary font-bold">{Math.floor(room.pricePerHour).toLocaleString()}đ</span>
                             ) : (
                                 <span className="text-green-600 font-bold">Miễn phí</span>
                             )}
@@ -803,7 +803,7 @@ const BookingPage: React.FC = () => {
                       {booking.selectedRoom && booking.selectedRoom.pricePerHour > 0 && (
                           <div className="flex justify-between text-gray-500 italic">
                              <span>Phụ thu phòng:</span>
-                             <span>{booking.selectedRoom.pricePerHour.toLocaleString()}đ/h</span>
+                             <span>{Math.floor(booking.selectedRoom.pricePerHour).toLocaleString()}đ</span>
                           </div>
                       )}
                   </div>
@@ -964,7 +964,7 @@ const BookingPage: React.FC = () => {
                           </div>
                           <div className="bg-gray-50 p-3 rounded-lg">
                               <span className="block text-xs text-gray-500 uppercase tracking-wider">Phụ thu</span>
-                              <span className="font-bold text-primary">{showRoomModal.pricePerHour?.toLocaleString() || 0}đ/h</span>
+                              <span className="font-bold text-primary">{showRoomModal.pricePerHour ? Math.floor(showRoomModal.pricePerHour).toLocaleString() : 0}đ</span>
                           </div>
                       </div>
 
