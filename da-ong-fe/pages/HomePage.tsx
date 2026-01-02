@@ -195,7 +195,7 @@ const HomePage: React.FC = () => {
               className="overflow-auto max-h-[600px] bg-gray-50"
               style={{ cursor: zoomLevel > 1 ? 'grab' : 'default' }}
             >
-              <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center' }}>
+              <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel}) rotate(180deg)`, transformOrigin: 'center' }}>
                 <img 
                   src="/da-va-ong.svg" 
                   alt="Sơ đồ nhà hàng Đá & Ong" 

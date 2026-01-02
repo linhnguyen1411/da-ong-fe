@@ -1,17 +1,48 @@
-import React from 'react';
-import { ApiRoom } from '../services/api';
+import React, { useState } from 'react';
+import { ApiRoom, API_BASE_ORIGIN } from '../services/api';
 
 interface RoomCardProps {
   room: ApiRoom;
 }
 
+const getImageUrl = (url?: string): string => {
+  if (!url) return 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400';
+  if (url.startsWith('http')) return url;
+  return `${API_BASE_ORIGIN}${url}`;
+};
+
 const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+  const [imageError, setImageError] = useState(false);
+  const [imageSrc, setImageSrc] = useState(() => {
+    const url = room.thumbnail_url || room.images_urls?.[0];
+    return url ? getImageUrl(url) : 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400';
+  });
+
+  const handleImageError = () => {
+    if (!imageError) {
+      // Thử ảnh tiếp theo nếu có
+      if (room.images_urls && room.images_urls.length > 1) {
+        const nextImage = room.images_urls.find((url, index) => index > 0);
+        if (nextImage) {
+          setImageSrc(getImageUrl(nextImage));
+          setImageError(true);
+          return;
+        }
+      }
+      // Fallback về placeholder
+      setImageSrc('https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400');
+      setImageError(true);
+    }
+  };
+
   return (
     <div className="rounded-lg shadow-lg bg-white p-4 flex flex-col items-center border border-gray-100">
       <img
-        src={room.thumbnail_url || room.images_urls?.[0] || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400'}
+        src={imageSrc}
         alt={room.name}
         className="w-full h-40 object-cover rounded-md mb-3"
+        onError={handleImageError}
+        loading="lazy"
       />
       <h3 className="text-xl font-bold mb-1 text-dark text-center">{room.name}</h3>
       <div className="text-gray-600 text-sm mb-2 text-center">{room.description}</div>
