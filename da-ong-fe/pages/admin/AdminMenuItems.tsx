@@ -74,7 +74,7 @@ const AdminMenuItems: React.FC = () => {
       active: true,
       is_market_price: false,
       product_code: '',
-      unit: ''
+      unit: 'Phần'
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -93,7 +93,7 @@ const AdminMenuItems: React.FC = () => {
       active: item.active,
       is_market_price: item.is_market_price || false,
       product_code: item.product_code || '',
-      unit: item.unit || ''
+      unit: item.unit || 'Phần'
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -271,7 +271,9 @@ const AdminMenuItems: React.FC = () => {
   };
 
   const filteredItems = items.filter(item => {
-    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    const searchLower = search.toLowerCase();
+    const matchSearch = item.name.toLowerCase().includes(searchLower) ||
+                       (item.product_code && item.product_code.toLowerCase().includes(searchLower));
     const matchCategory = categoryFilter === '' || item.category_id === categoryFilter;
     return matchSearch && matchCategory;
   });
@@ -374,6 +376,8 @@ const AdminMenuItems: React.FC = () => {
               <tr>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600">Hình</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600">Tên món</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-600">Mã hàng</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-600">Đơn vị</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600">Danh mục</th>
                 <th className="text-right py-3 px-4 font-semibold text-gray-600">Giá</th>
                 <th className="text-center py-3 px-4 font-semibold text-gray-600">Ảnh</th>
@@ -401,6 +405,16 @@ const AdminMenuItems: React.FC = () => {
                     <td className="py-3 px-4">
                       <p className="font-medium text-dark">{item.name}</p>
                       <p className="text-sm text-gray-400 line-clamp-1">{item.description}</p>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-mono text-sm text-gray-600">
+                        {item.product_code || '-'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded text-sm font-medium">
+                        {item.unit || 'Phần'}
+                      </span>
                     </td>
                     <td className="py-3 px-4">
                       <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm">
@@ -445,7 +459,7 @@ const AdminMenuItems: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-gray-400">
+                  <td colSpan={9} className="py-12 text-center text-gray-400">
                     Không có món ăn nào
                   </td>
                 </tr>
@@ -482,13 +496,16 @@ const AdminMenuItems: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính</label>
-                  <input
-                    type="text"
-                    value={formData.unit}
+                  <select
+                    value={formData.unit || 'Phần'}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50"
-                    placeholder="VD: Phần, Đĩa, Kg..."
-                  />
+                  >
+                    <option value="Phần">Phần</option>
+                    <option value="Kg">Kg</option>
+                    <option value="Lạng">Lạng</option>
+                    <option value="Nguyên Con">Nguyên Con</option>
+                  </select>
                 </div>
               </div>
 

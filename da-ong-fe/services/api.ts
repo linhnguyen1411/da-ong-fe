@@ -1,7 +1,7 @@
 // API Service for Đá & Ong Restaurant
 
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3010/api/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3000/api/v1';
 export const API_BASE_ORIGIN = API_BASE_URL.replace(/\/api\/v1$/, '');
 // Types from API
 export interface ApiCategory {
