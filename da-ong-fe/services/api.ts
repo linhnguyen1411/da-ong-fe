@@ -238,6 +238,16 @@ export const getRooms = (date?: string, time?: string) => {
 };
 export const getRoom = (id: number) => apiCall<ApiRoom>(`/rooms/${id}`);
 
+// Menu Images
+export interface ApiMenuImage {
+  id: number;
+  image_url: string;
+  position: number;
+  active: boolean;
+}
+
+export const getMenuImages = () => apiCall<ApiMenuImage[]>('/menu_images');
+
 // Contacts
 export const submitContact = (data: ApiContact) => 
   apiCall<{ message: string; contact: ApiContact }>('/contacts', {
@@ -618,4 +628,36 @@ export const adminDeleteDailySpecialImage = (id: number, imageId: number) =>
   apiCall<ApiDailySpecial>(`/admin/daily_specials/${id}/delete_image/${imageId}`, {
     method: 'DELETE',
     headers: getAuthHeader(),
+  });
+
+// Admin Menu Images
+export const adminGetMenuImages = () =>
+  apiCall<ApiMenuImage[]>('/admin/menu_images', { headers: getAuthHeader() });
+
+export const adminCreateMenuImage = (file: File, position?: number) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  if (position !== undefined) formData.append('position', position.toString());
+  return apiUpload<ApiMenuImage>('/admin/menu_images', formData, 'POST');
+};
+
+export const adminUpdateMenuImage = (id: number, file?: File, position?: number, active?: boolean) => {
+  const formData = new FormData();
+  if (file) formData.append('image', file);
+  if (position !== undefined) formData.append('position', position.toString());
+  if (active !== undefined) formData.append('active', active.toString());
+  return apiUpload<ApiMenuImage>(`/admin/menu_images/${id}`, formData, 'PATCH');
+};
+
+export const adminDeleteMenuImage = (id: number) =>
+  apiCall(`/admin/menu_images/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader(),
+  });
+
+export const adminReorderMenuImages = (positions: Array<{ id: number; position: number }>) =>
+  apiCall<{ message: string }>('/admin/menu_images/reorder', {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify({ positions }),
   });
