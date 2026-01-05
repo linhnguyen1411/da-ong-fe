@@ -17,6 +17,10 @@ const Footer: React.FC = () => {
               <MapPin className="text-primary w-5 h-5 mt-1" />
               <span>{COMPANY_INFO.address}</span>
             </li>
+            <li className="flex items-start gap-3">
+              <MapPin className="text-primary w-5 h-5 mt-1" />
+              <span>25 Nguyễn Thái Bình - Hoà Khánh - Đà Nẵng</span>
+            </li>
             <li className="flex items-center gap-3">
               <Phone className="text-primary w-5 h-5" />
               <span>{COMPANY_INFO.phone}</span>
