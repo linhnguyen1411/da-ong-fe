@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Loader2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ArrowRight, Loader2, ZoomIn, ZoomOut, RotateCcw, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import DishCard from '../components/DishCard';
-import { getBestSellers, getDailySpecials, ApiBestSeller, ApiDailySpecial, getRooms, ApiRoom, ApiMenuItem, API_BASE_ORIGIN } from '../services/api';
+import { getBestSellers, getRooms, ApiRoom, ApiMenuItem, API_BASE_ORIGIN } from '../services/api';
 import { Dish, DishCategory } from '../types';
 import RoomCard from '../components/RoomCard';
 
@@ -34,15 +34,14 @@ const HomePage: React.FC = () => {
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(1);
   const floorPlanRef = useRef<HTMLDivElement>(null);
+  const [selectedRoom, setSelectedRoom] = useState<ApiRoom | null>(null);
+  const [roomImageIndex, setRoomImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        // Fetch best sellers and daily specials
-        const [bestSellers, dailySpecials] = await Promise.all([
-          getBestSellers(),
-          getDailySpecials(true) // Only today's specials
-        ]);
+        // Only fetch best sellers (no daily specials)
+        const bestSellers = await getBestSellers();
         
         const dishes: Dish[] = [];
         const addedIds = new Set<string>();
@@ -58,20 +57,6 @@ const HomePage: React.FC = () => {
             }
           }
         });
-        
-        // Add daily specials if we don't have 3 yet
-        if (dishes.length < 3) {
-          dailySpecials.forEach(ds => {
-            if (ds.menu_item && dishes.length < 3) {
-              const menuItem = ds.menu_item as ApiMenuItem;
-              const dishId = String(menuItem.id);
-              if (!addedIds.has(dishId)) {
-                dishes.push(apiToDish(menuItem));
-                addedIds.add(dishId);
-              }
-            }
-          });
-        }
         
         setFeatured(dishes);
       } catch (err) {
@@ -195,7 +180,7 @@ const HomePage: React.FC = () => {
               className="overflow-auto max-h-[600px] bg-gray-50"
               style={{ cursor: zoomLevel > 1 ? 'grab' : 'default' }}
             >
-              <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel}) rotate(180deg)`, transformOrigin: 'center' }}>
+              <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center' }}>
                 <img 
                   src="/da-va-ong.svg?v=20260105" 
                   alt="Sơ đồ nhà hàng Đá & Ong" 
@@ -228,7 +213,16 @@ const HomePage: React.FC = () => {
               <h3 className="text-2xl font-bold mb-4 text-primary">Phòng VIP</h3>
               <div className="grid md:grid-cols-3 gap-8">
                 {rooms.map(room => (
-                  <RoomCard key={room.id} room={room} />
+                  <RoomCard 
+                    key={room.id} 
+                    room={room} 
+                    onClick={() => {
+                      if (room.images_urls && room.images_urls.length > 0) {
+                        setSelectedRoom(room);
+                        setRoomImageIndex(0);
+                      }
+                    }}
+                  />
                 ))}
                 {rooms.length === 0 && <div className="text-gray-400 italic">Chưa có phòng VIP</div>}
               </div>
@@ -267,6 +261,84 @@ const HomePage: React.FC = () => {
               </div>
           </div>
       </section>
+
+      {/* Room Images Gallery Modal */}
+      {selectedRoom && selectedRoom.images_urls && selectedRoom.images_urls.length > 0 && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setSelectedRoom(null)}
+        >
+          <button
+            onClick={() => setSelectedRoom(null)}
+            className="absolute top-4 right-4 text-white hover:text-primary transition-colors z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          {/* Main Image */}
+          <div 
+            className="relative max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getFullUrl(selectedRoom.images_urls_medium?.[roomImageIndex] || selectedRoom.images_urls[roomImageIndex])}
+              alt={`${selectedRoom.name} ${roomImageIndex + 1}`}
+              className="max-w-full max-h-[85vh] object-contain"
+            />
+          </div>
+
+          {/* Navigation */}
+          {selectedRoom.images_urls.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRoomImageIndex((prev) => (prev - 1 + selectedRoom.images_urls!.length) % selectedRoom.images_urls!.length);
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRoomImageIndex((prev) => (prev + 1) % selectedRoom.images_urls!.length);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+
+              {/* Thumbnails */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[90vw] p-2 z-10">
+                {selectedRoom.images_urls.map((url, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRoomImageIndex(idx);
+                    }}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                      idx === roomImageIndex ? 'border-primary' : 'border-transparent hover:border-white/50'
+                    }`}
+                  >
+                    <img
+                      src={getFullUrl(selectedRoom.images_urls_thumb?.[idx] || url)}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+
+              {/* Image Counter */}
+              <div className="absolute top-4 left-4 text-white text-lg z-10">
+                {roomImageIndex + 1} / {selectedRoom.images_urls.length}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

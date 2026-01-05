@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCategories, getMenuItems, getMenuImages, ApiCategory, ApiMenuItem, ApiMenuImage } from '../services/api';
-import { Loader2, ShoppingBag, CheckCircle, X, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getCategories, getMenuItems, getMenuImages, ApiCategory, ApiMenuItem, ApiMenuImage, getBestSellers, ApiBestSeller } from '../services/api';
+import { Loader2, ShoppingBag, CheckCircle, X, ArrowRight, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import DishCard from '../components/DishCard';
 import { useBookingCart } from '../contexts/BookingContext';
 
@@ -37,8 +37,10 @@ const MenuPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<number | 'ALL'>('ALL');
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [menuItems, setMenuItems] = useState<ApiMenuItem[]>([]);
+  const [bestSellers, setBestSellers] = useState<ApiBestSeller[]>([]);
   const [menuImages, setMenuImages] = useState<ApiMenuImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedMenuImageIndex, setSelectedMenuImageIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -48,13 +50,30 @@ const MenuPage: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [categoriesData, menuItemsData, menuImagesData] = await Promise.all([
+        const [categoriesData, menuItemsData, bestSellersData, menuImagesData] = await Promise.all([
           getCategories(),
           getMenuItems(),
+          getBestSellers(),
           getMenuImages().catch(() => []) // Menu images optional
         ]);
-        setCategories(categoriesData);
-        setMenuItems(menuItemsData);
+        // Filter out "Đồ Uống" category (case-insensitive)
+        const filteredCategories = categoriesData.filter(cat => {
+          const nameLower = cat.name.toLowerCase().trim();
+          return !nameLower.includes('đồ uống');
+        });
+        // Filter out menu items from "Đồ Uống" category
+        const drinkCategoryIds = categoriesData
+          .filter(cat => {
+            const nameLower = cat.name.toLowerCase().trim();
+            return nameLower.includes('đồ uống');
+          })
+          .map(cat => cat.id);
+        const filteredMenuItems = menuItemsData.filter(item => 
+          !drinkCategoryIds.includes(item.category_id)
+        );
+        setCategories(filteredCategories);
+        setMenuItems(filteredMenuItems);
+        setBestSellers(bestSellersData);
         setMenuImages(menuImagesData);
       } catch (err) {
         setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
@@ -117,7 +136,10 @@ const MenuPage: React.FC = () => {
   }, [menuImages.length]);
 
   const filteredItems = activeCategory === 'ALL'
-    ? menuItems
+    ? bestSellers
+        .filter(bs => bs.menu_item && bs.active)
+        .map(bs => bs.menu_item as ApiMenuItem)
+        .filter(item => item !== null && item !== undefined)
     : menuItems.filter(item => item.category_id === activeCategory);
 
   if (loading) {
@@ -162,7 +184,7 @@ const MenuPage: React.FC = () => {
             {/* Mobile: Carousel/Slider */}
             <div className="lg:hidden">
               <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="relative aspect-[3/4] max-h-[600px] bg-gray-100">
+                <div className="relative aspect-[3/4] max-h-[600px] bg-gray-100 cursor-pointer" onClick={() => setSelectedMenuImageIndex(currentImageIndex)}>
                   {menuImages.map((img, idx) => (
                     <img
                       key={img.id}
@@ -228,7 +250,7 @@ const MenuPage: React.FC = () => {
                     key={img.id}
                     className="flex-shrink-0 w-[calc(25%-12px)] min-w-[calc(25%-12px)] bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                   >
-                    <div className="relative aspect-[3/4] bg-gray-100">
+                    <div className="relative aspect-[3/4] bg-gray-100 cursor-pointer" onClick={() => setSelectedMenuImageIndex(idx)}>
                       <img
                         src={img.image_url.startsWith('http') ? img.image_url : `${API_BASE_ORIGIN}${img.image_url}`}
                         alt={`Menu ${idx + 1}`}
@@ -317,6 +339,64 @@ const MenuPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Menu Images Fullscreen Lightbox */}
+      {selectedMenuImageIndex !== null && menuImages[selectedMenuImageIndex] && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setSelectedMenuImageIndex(null)}
+        >
+          <button
+            onClick={() => setSelectedMenuImageIndex(null)}
+            className="absolute top-4 right-4 text-white hover:text-primary transition-colors z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          {/* Main Image */}
+          <div 
+            className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={menuImages[selectedMenuImageIndex].image_url.startsWith('http') 
+                ? menuImages[selectedMenuImageIndex].image_url 
+                : `${API_BASE_ORIGIN}${menuImages[selectedMenuImageIndex].image_url}`}
+              alt={`Menu ${selectedMenuImageIndex + 1}`}
+              className="max-w-full max-h-[95vh] object-contain"
+            />
+          </div>
+
+          {/* Navigation */}
+          {menuImages.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedMenuImageIndex((prev) => (prev !== null ? (prev - 1 + menuImages.length) % menuImages.length : 0));
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedMenuImageIndex((prev) => (prev !== null ? (prev + 1) % menuImages.length : 0));
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+
+              {/* Image Counter */}
+              <div className="absolute top-4 left-4 text-white text-lg z-10">
+                {selectedMenuImageIndex + 1} / {menuImages.length}
+              </div>
+            </>
+          )}
+        </div>
+      )}
   {/* Không cần Decision Modal, đã có trong DishCard */}
     </div>
   );

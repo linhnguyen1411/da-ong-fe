@@ -3,6 +3,7 @@ import { ApiRoom, API_BASE_ORIGIN } from '../services/api';
 
 interface RoomCardProps {
   room: ApiRoom;
+  onClick?: () => void;
 }
 
 const getImageUrl = (url?: string): string => {
@@ -11,7 +12,7 @@ const getImageUrl = (url?: string): string => {
   return `${API_BASE_ORIGIN}${url}`;
 };
 
-const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+const RoomCard: React.FC<RoomCardProps> = ({ room, onClick }) => {
   const [imageError, setImageError] = useState(false);
   // Ưu tiên dùng thumbnail_url_thumb (nhẹ nhất), fallback về thumbnail_url_medium, rồi mới đến thumbnail_url
   const [imageSrc, setImageSrc] = useState(() => {
@@ -56,13 +57,16 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
 
   return (
     <div className="rounded-lg shadow-lg bg-white p-4 flex flex-col items-center border border-gray-100">
-      <img
-        src={imageSrc}
-        alt={room.name}
-        className="w-full h-40 object-cover rounded-md mb-3"
-        onError={handleImageError}
-        loading="lazy"
-      />
+      <div className={`w-full aspect-square overflow-hidden rounded-md mb-3 ${onClick ? 'cursor-pointer' : ''}`}>
+        <img
+          src={imageSrc}
+          alt={room.name}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          onError={handleImageError}
+          onClick={onClick}
+          loading="lazy"
+        />
+      </div>
       <h3 className="text-xl font-bold mb-1 text-dark text-center">{room.name}</h3>
       <div className="text-gray-600 text-sm mb-2 text-center">{room.description}</div>
       <div className="flex flex-wrap gap-2 justify-center text-xs mb-2">

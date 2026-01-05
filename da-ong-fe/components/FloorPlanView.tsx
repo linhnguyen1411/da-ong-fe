@@ -63,7 +63,7 @@ export const FloorPlanView: React.FC<FloorPlanViewProps> = ({
   };
 
   const renderPrivateRoomsPlan = () => (
-    <svg viewBox="0 0 100 95" className="w-full h-auto max-h-[500px]" style={{ transform: 'rotate(180deg)' }}>
+    <svg viewBox="0 0 100 95" className="w-full h-auto max-h-[500px]">
       {/* Background */}
       <rect x="0" y="0" width="100" height="95" fill="#fef9e7" rx="2" />
       
@@ -195,7 +195,7 @@ export const FloorPlanView: React.FC<FloorPlanViewProps> = ({
   );
 
   const renderOutdoorTablesPlan = () => (
-    <svg viewBox="0 0 100 100" className="w-full h-auto max-h-[500px]" style={{ transform: 'rotate(180deg)' }}>
+    <svg viewBox="0 0 100 100" className="w-full h-auto max-h-[500px]">
       {/* Garden background with gradient */}
       <defs>
         <linearGradient id="gardenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
