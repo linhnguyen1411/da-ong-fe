@@ -197,7 +197,7 @@ const HomePage: React.FC = () => {
             >
               <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel}) rotate(180deg)`, transformOrigin: 'center' }}>
                 <img 
-                  src="/da-va-ong.svg" 
+                  src="/da-va-ong.svg?v=20260105" 
                   alt="Sơ đồ nhà hàng Đá & Ong" 
                   className="w-full h-auto object-contain"
                   style={{ maxWidth: '100%' }}
