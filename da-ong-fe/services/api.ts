@@ -77,8 +77,12 @@ export interface ApiRoom {
   active: boolean;
   room_images?: ApiRoomImage[];
   images_urls?: string[];
+  images_urls_thumb?: string[];
+  images_urls_medium?: string[];
   thumbnail_url?: string;
-  images?: { id: number; url: string }[];
+  thumbnail_url_thumb?: string;
+  thumbnail_url_medium?: string;
+  images?: { id: number; url: string; url_thumb?: string; url_medium?: string }[];
   booked_for_date?: boolean; // true if room has booking on the requested date
   bookings?: Array<{
     id: number;

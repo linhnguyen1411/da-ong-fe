@@ -13,16 +13,35 @@ const getImageUrl = (url?: string): string => {
 
 const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
   const [imageError, setImageError] = useState(false);
+  // Ưu tiên dùng thumbnail_url_thumb (nhẹ nhất), fallback về thumbnail_url_medium, rồi mới đến thumbnail_url
   const [imageSrc, setImageSrc] = useState(() => {
-    const url = room.thumbnail_url || room.images_urls?.[0];
+    const url = room.thumbnail_url_thumb || room.thumbnail_url_medium || room.thumbnail_url || room.images_urls_thumb?.[0] || room.images_urls_medium?.[0] || room.images_urls?.[0];
     return url ? getImageUrl(url) : 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400';
   });
 
   const handleImageError = () => {
     if (!imageError) {
-      // Thử ảnh tiếp theo nếu có
-      if (room.images_urls && room.images_urls.length > 1) {
-        const nextImage = room.images_urls.find((url, index) => index > 0);
+      // Thử ảnh thumbnail tiếp theo nếu có
+      const thumbUrls = room.images_urls_thumb || [];
+      const mediumUrls = room.images_urls_medium || [];
+      const originalUrls = room.images_urls || [];
+      
+      if (thumbUrls.length > 1) {
+        const nextImage = thumbUrls[1];
+        if (nextImage) {
+          setImageSrc(getImageUrl(nextImage));
+          setImageError(true);
+          return;
+        }
+      } else if (mediumUrls.length > 1) {
+        const nextImage = mediumUrls[1];
+        if (nextImage) {
+          setImageSrc(getImageUrl(nextImage));
+          setImageError(true);
+          return;
+        }
+      } else if (originalUrls.length > 1) {
+        const nextImage = originalUrls[1];
         if (nextImage) {
           setImageSrc(getImageUrl(nextImage));
           setImageError(true);
