@@ -33,7 +33,8 @@ const Footer: React.FC = () => {
         </div>
         <div>
           <h3 className="text-white text-lg font-bold mb-4">Mạng Xã Hội</h3>
-          <a href="#" className="block mb-2 hover:text-primary transition">Facebook</a>
+          <a href="https://www.facebook.com/yenha99" target="_blank" rel="noreferrer" className="block mb-2 hover:text-primary transition">Facebook</a>
+          <a href="https://www.tiktok.com/@nhahangdavaong" target="_blank" rel="noreferrer" className="block mb-2 hover:text-primary transition">TikTok</a>
           <a href={COMPANY_INFO.zalo} target="_blank" rel="noreferrer" className="block hover:text-primary transition">Zalo Official Account</a>
         </div>
       </div>
