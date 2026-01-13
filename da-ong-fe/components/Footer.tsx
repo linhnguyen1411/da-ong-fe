@@ -8,11 +8,13 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 grid md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <img 
-              src="/LOGO-DA-ONG.png" 
-              alt="ĐÁ & ONG" 
-              className="h-12 w-auto object-contain"
-            />
+            <div className="bg-white rounded-lg p-2 border-2 border-primary/30 shadow-md">
+              <img 
+                src="/LOGO-DA-ONG.png" 
+                alt="ĐÁ & ONG" 
+                className="h-16 w-auto object-contain"
+              />
+            </div>
             <h3 className="text-white text-xl font-serif font-bold">ĐÁ & ONG</h3>
           </div>
           <p className="mb-4">Trải nghiệm ẩm thực đẳng cấp với không gian sang trọng và hương vị tuyệt hảo.</p>
