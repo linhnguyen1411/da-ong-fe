@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, UtensilsCrossed, FolderOpen, Calendar,
-  Mail, DoorOpen, LogOut, Menu, X, ChevronRight, Star, Sparkles, Image
+  Mail, DoorOpen, LogOut, Menu, X, ChevronRight, Star, Sparkles, Image, Users
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -18,6 +18,7 @@ const menuItems = [
   { path: '/admin/best-sellers', icon: Star, label: 'Best Sellers' },
   { path: '/admin/daily-specials', icon: Sparkles, label: 'Món ngon mỗi ngày' },
   { path: '/admin/bookings', icon: Calendar, label: 'Đặt bàn' },
+  { path: '/admin/customers', icon: Users, label: 'Hội viên' },
   { path: '/admin/contacts', icon: Mail, label: 'Liên hệ' },
   { path: '/admin/rooms', icon: DoorOpen, label: 'Phòng' },
 ];

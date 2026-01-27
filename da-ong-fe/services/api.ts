@@ -124,7 +124,66 @@ export interface ApiBooking {
   }>;
 }
 
+// ============ LOYALTY / CUSTOMERS ============
+export interface ApiCustomerVisit {
+  id: number;
+  source: 'manual' | 'booking_completed' | string;
+  occurred_at: string;
+  note?: string;
+  amount_vnd?: number | null;
+  booking_id?: number | null;
+  admin_id?: number | null;
+  created_at?: string;
+}
+
+export interface ApiLoyaltyTransaction {
+  id: number;
+  kind: 'earn' | 'redeem' | 'adjust' | string;
+  points: number;
+  balance_before?: number | null;
+  balance_after?: number | null;
+  amount_vnd?: number | null;
+  reference?: string | null;
+  note?: string | null;
+  occurred_at: string;
+  booking_id?: number | null;
+  admin_id?: number | null;
+  created_at?: string;
+}
+
+export interface ApiCustomer {
+  id: number;
+  name?: string | null;
+  phone: string;
+  email?: string | null;
+  notes?: string | null;
+  active: boolean;
+  points_balance: number;
+  total_visits: number;
+  total_spent_vnd: number;
+  last_visit_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+
+  customer_visits?: ApiCustomerVisit[];
+  loyalty_transactions?: ApiLoyaltyTransaction[];
+}
+
 // Helper function for API calls
+async function safeJson<T>(response: Response): Promise<T> {
+  // 204/205 must not have a body
+  if (response.status === 204 || response.status === 205) {
+    return null as unknown as T;
+  }
+
+  const text = await response.text();
+  if (!text || text.trim().length === 0) {
+    return null as unknown as T;
+  }
+
+  return JSON.parse(text) as T;
+}
+
 async function apiCall<T>(endpoint: string, options?: RequestInit, retryCount = 0): Promise<T> {
   const { headers, ...restOptions } = options || {};
   const isAdminApi = endpoint.startsWith('/admin') || endpoint.startsWith('/auth/me');
@@ -173,7 +232,7 @@ async function apiCall<T>(endpoint: string, options?: RequestInit, retryCount = 
       throw new Error(error.error || error.errors?.join(', ') || `HTTP ${response.status}: ${response.statusText}`);
     }
 
-    return response.json();
+    return safeJson<T>(response);
   } catch (error) {
     // Retry network errors
     if ((error instanceof TypeError || error.message.includes('fetch')) && retryCount < maxRetries) {
@@ -201,11 +260,7 @@ async function apiUpload<T>(endpoint: string, formData: FormData, method: string
     throw new Error(error.error || error.errors?.join(', ') || 'API Error');
   }
 
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
+  return safeJson<T>(response);
 }
 
 // ============ PUBLIC APIs ============
@@ -490,6 +545,67 @@ export const adminDeleteRoomImage = (roomId: number, imageId: number) =>
   apiCall<void>(`/admin/rooms/${roomId}/delete_image/${imageId}`, {
     method: 'DELETE',
     headers: getAuthHeader(),
+  });
+
+// Admin Customers (Loyalty)
+export const adminGetCustomers = (params?: { q?: string; active?: boolean; limit?: number }) => {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set('q', params.q);
+  if (typeof params?.active === 'boolean') sp.set('active', String(params.active));
+  if (params?.limit) sp.set('limit', String(params.limit));
+  const query = sp.toString();
+  return apiCall<ApiCustomer[]>(`/admin/customers${query ? `?${query}` : ''}`, { headers: getAuthHeader() });
+};
+
+export const adminGetCustomer = (id: number) =>
+  apiCall<ApiCustomer>(`/admin/customers/${id}`, { headers: getAuthHeader() });
+
+export const adminLookupCustomerByPhone = (phone: string) =>
+  apiCall<ApiCustomer | null>(`/admin/customers/lookup?phone=${encodeURIComponent(phone)}`, { headers: getAuthHeader() });
+
+export const adminCreateCustomer = (data: Partial<ApiCustomer>) =>
+  apiCall<ApiCustomer>('/admin/customers', {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminUpdateCustomer = (id: number, data: Partial<ApiCustomer>) =>
+  apiCall<ApiCustomer>(`/admin/customers/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminDeleteCustomer = (id: number) =>
+  apiCall<void>(`/admin/customers/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader(),
+  });
+
+export const adminAdjustCustomerPoints = (id: number, data: { kind: 'earn' | 'redeem' | 'adjust'; points: number; note?: string; booking_id?: number }) =>
+  apiCall<{ customer: ApiCustomer; transaction: ApiLoyaltyTransaction }>(`/admin/customers/${id}/adjust_points`, {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminRecordCustomerVisit = (id: number, data?: { occurred_at?: string; note?: string; booking_id?: number; amount_vnd?: number }) =>
+  apiCall<{ customer: ApiCustomer; visit: ApiCustomerVisit }>(`/admin/customers/${id}/record_visit`, {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data || {}),
+  });
+
+export const adminUpdateCustomerVisit = (
+  customerId: number,
+  visitId: number,
+  data: { occurred_at?: string; note?: string; amount_vnd?: number }
+) =>
+  apiCall<{ customer: ApiCustomer; visit: ApiCustomerVisit }>(`/admin/customers/${customerId}/visits/${visitId}`, {
+    method: 'PATCH',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
   });
 
 // ============ UPLOAD APIs ============
