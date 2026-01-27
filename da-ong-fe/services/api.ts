@@ -169,6 +169,35 @@ export interface ApiCustomer {
   loyalty_transactions?: ApiLoyaltyTransaction[];
 }
 
+// ============ CHATBOT ============
+export interface ChatbotRoom {
+  id: number;
+  name: string;
+  capacity: number;
+  room_type?: string;
+  price_per_hour?: string;
+}
+
+export interface ChatbotResponse {
+  intent: string;
+  reply: string;
+  required?: string[];
+  rooms?: ChatbotRoom[];
+}
+
+// ============ ADMIN CHATBOT FAQ ============
+export interface ApiChatbotFaq {
+  id: number;
+  title?: string | null;
+  answer: string;
+  patterns: string[];
+  active: boolean;
+  priority: number;
+  locale: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // Helper function for API calls
 async function safeJson<T>(response: Response): Promise<T> {
   // 204/205 must not have a body
@@ -183,6 +212,12 @@ async function safeJson<T>(response: Response): Promise<T> {
 
   return JSON.parse(text) as T;
 }
+
+export const chatRespond = (message: string, context?: { date?: string; time?: string; party_size?: number }) =>
+  apiCall<ChatbotResponse>('/chat/respond', {
+    method: 'POST',
+    body: JSON.stringify({ message, context }),
+  });
 
 async function apiCall<T>(endpoint: string, options?: RequestInit, retryCount = 0): Promise<T> {
   const { headers, ...restOptions } = options || {};
@@ -606,6 +641,29 @@ export const adminUpdateCustomerVisit = (
     method: 'PATCH',
     headers: getAuthHeader(),
     body: JSON.stringify(data),
+  });
+
+export const adminGetChatbotFaqs = () =>
+  apiCall<ApiChatbotFaq[]>('/admin/chatbot_faqs', { headers: getAuthHeader() });
+
+export const adminCreateChatbotFaq = (data: Partial<ApiChatbotFaq>) =>
+  apiCall<ApiChatbotFaq>('/admin/chatbot_faqs', {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminUpdateChatbotFaq = (id: number, data: Partial<ApiChatbotFaq>) =>
+  apiCall<ApiChatbotFaq>(`/admin/chatbot_faqs/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminDeleteChatbotFaq = (id: number) =>
+  apiCall<void>(`/admin/chatbot_faqs/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader(),
   });
 
 // ============ UPLOAD APIs ============

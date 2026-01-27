@@ -20,8 +20,10 @@ import AdminBestSellers from './pages/admin/AdminBestSellers';
 import AdminDailySpecials from './pages/admin/AdminDailySpecials';
 import AdminMenuImages from './pages/admin/AdminMenuImages';
 import AdminCustomers from './pages/admin/AdminCustomers';
+import AdminChatbotFaqs from './pages/admin/AdminChatbotFaqs';
 import { BookingProvider } from './contexts/BookingContext';
 import CartFloatingButton from './components/CartFloatingButton';
+import ChatWidget from './components/ChatWidget';
 
 const ScrollToTop = () => {
     const { pathname } = useLocation();
@@ -40,6 +42,7 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
     <main className="flex-grow">{children}</main>
     <Footer />
     <CartFloatingButton />
+    <ChatWidget />
   </div>
 );
 
@@ -61,6 +64,7 @@ const App: React.FC = () => {
           <Route path="/admin/rooms" element={<AdminRooms />} />
           <Route path="/admin/menu-images" element={<AdminMenuImages />} />
           <Route path="/admin/customers" element={<AdminCustomers />} />
+          <Route path="/admin/chatbot" element={<AdminChatbotFaqs />} />
           
           {/* Customer routes - có Header/Footer */}
           <Route path="/" element={<CustomerLayout><HomePage /></CustomerLayout>} />
