@@ -213,7 +213,16 @@ async function safeJson<T>(response: Response): Promise<T> {
   return JSON.parse(text) as T;
 }
 
-export const chatRespond = (message: string, context?: { date?: string; time?: string; party_size?: number }) =>
+export const chatRespond = (
+  message: string,
+  context?: {
+    date?: string;
+    time?: string;
+    party_size?: number;
+    company_name?: string;
+    system_instruction?: string;
+  }
+) =>
   apiCall<ChatbotResponse>('/chat/respond', {
     method: 'POST',
     body: JSON.stringify({ message, context }),

@@ -5,17 +5,25 @@ import { useLocation } from 'react-router-dom';
 
 type ChatMsg = { role: 'user' | 'bot'; text: string; ts: number };
 
-const initialBot = `Dạ em là trợ lý của Đá & Ong.\nAnh/chị cần em tư vấn món, đặt bàn hoặc check phòng trống không ạ?`;
+export type ChatWidgetConfig = {
+  companyName?: string;
+  greeting?: string;
+  systemInstruction?: string;
+};
 
-const ChatWidget: React.FC = () => {
+const ChatWidget: React.FC<{ config?: ChatWidgetConfig }> = ({ config }) => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const companyName = config?.companyName || 'Đá & Ong';
+  const greeting =
+    config?.greeting ||
+    `Dạ em là trợ lý của ${companyName}.\nAnh/chị cần em tư vấn món, đặt bàn hoặc check phòng trống không ạ?`;
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: 'bot', text: initialBot, ts: Date.now() },
+    { role: 'bot', text: greeting, ts: Date.now() },
   ]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -39,7 +47,10 @@ const ChatWidget: React.FC = () => {
 
     try {
       setLoading(true);
-      const res = await chatRespond(text);
+      const res = await chatRespond(text, {
+        company_name: config?.companyName,
+        system_instruction: config?.systemInstruction,
+      });
       const reply = res?.reply || 'Dạ anh/chị cho em xin thêm thông tin để em hỗ trợ ạ.';
       setMessages((prev) => [...prev, { role: 'bot', text: reply, ts: Date.now() }]);
     } catch (err: any) {
@@ -83,7 +94,7 @@ const ChatWidget: React.FC = () => {
           >
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <p className="font-bold text-dark">Tư vấn Đá & Ong</p>
+                <p className="font-bold text-dark">Tư vấn {companyName}</p>
                 <p className="text-xs text-gray-500">Check phòng trống • Đặt bàn • Gợi ý món</p>
               </div>
               <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
