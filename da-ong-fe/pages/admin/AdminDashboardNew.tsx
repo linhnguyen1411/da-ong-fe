@@ -503,10 +503,14 @@ const AdminDashboardNew: React.FC = () => {
               ) : roomsByDate.length > 0 ? (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-5 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
                   {(() => {
-                    const filteredRooms = roomsByDate.filter((room: any) => 
-                      roomSearchTerm === '' || 
-                      room.name.toLowerCase().includes(roomSearchTerm.toLowerCase())
-                    );
+                    const filteredRooms = roomsByDate.filter((room: any) => {
+                      // Only show private rooms on dashboard
+                      const roomType = room.room_type || room.roomType || 'private';
+                      if (roomType !== 'private') return false;
+
+                      if (roomSearchTerm === '') return true;
+                      return room.name.toLowerCase().includes(roomSearchTerm.toLowerCase());
+                    });
                     if (filteredRooms.length === 0) {
                       return (
                         <div className="col-span-full text-center py-4">
