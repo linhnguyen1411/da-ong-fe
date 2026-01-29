@@ -42,7 +42,8 @@ const CustomerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
     <main className="flex-grow">{children}</main>
     <Footer />
     <CartFloatingButton />
-    <ChatWidget />
+    {/* ChatWidget temporarily disabled */}
+    {/* <ChatWidget /> */}
   </div>
 );
 
