@@ -75,16 +75,20 @@ const BookingPage: React.FC = () => {
             // Always restore last saved step and state from pendingBooking
             try {
                 const state = pending;
+                const today = new Date().toISOString().split('T')[0];
                 return {
-                    ...state
+                    ...state,
+                    // Default booking date to today if empty
+                    date: state?.date || today
                 };
             } catch {}
         }
         // Fallback: new booking
+        const today = new Date().toISOString().split('T')[0];
         return {
             step: 1,
             guestCount: 2,
-            date: '',
+            date: today,
             time: '',
             locationType: 'private',
             audioNeeded: false,
@@ -1044,8 +1048,8 @@ const BookingPage: React.FC = () => {
                           <img src="/images/qr-bank.jpg" alt="QR chuyển khoản" className="w-48 h-48 object-contain border rounded-lg bg-white" />
                           <div className="text-center">
                               <div className="font-bold text-dark">Ngân hàng: <span className="text-primary">Sacombank</span></div>
-                              <div className="font-bold text-dark">STK: <span className="text-primary">040905944272</span></div>
-                              <div className="text-dark text-sm">Chủ TK: <span className="font-semibold">TRẦN THỊ ÁI NHI</span></div>
+                              <div className="font-bold text-dark">STK: <span className="text-primary">0931783167</span></div>
+                              <div className="text-dark text-sm">Chủ TK: <span className="font-semibold">TRẦN THỊ KIM DUNG</span></div>
                           </div>
                       </div>
 
