@@ -21,6 +21,7 @@ import AdminDailySpecials from './pages/admin/AdminDailySpecials';
 import AdminMenuImages from './pages/admin/AdminMenuImages';
 import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminChatbotFaqs from './pages/admin/AdminChatbotFaqs';
+import AdminStaff from './pages/admin/AdminStaff';
 import { BookingProvider } from './contexts/BookingContext';
 import CartFloatingButton from './components/CartFloatingButton';
 import ChatWidget from './components/ChatWidget';
@@ -66,6 +67,7 @@ const App: React.FC = () => {
           <Route path="/admin/menu-images" element={<AdminMenuImages />} />
           <Route path="/admin/customers" element={<AdminCustomers />} />
           <Route path="/admin/chatbot" element={<AdminChatbotFaqs />} />
+          <Route path="/admin/staff" element={<AdminStaff />} />
           
           {/* Customer routes - có Header/Footer */}
           <Route path="/" element={<CustomerLayout><HomePage /></CustomerLayout>} />

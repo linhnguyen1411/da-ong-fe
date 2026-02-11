@@ -520,6 +520,58 @@ export const adminConfirmBooking = (id: number) =>
     headers: getAuthHeader(),
   });
 
+// Admin Staff (Admins)
+export type AdminRole = 'super_admin' | 'admin' | 'manager' | 'receptionist' | 'staff';
+
+export interface ApiAdminUser {
+  id: number;
+  email: string;
+  name: string;
+  role: AdminRole;
+  active: boolean;
+  created_at: string;
+}
+
+export const adminGetAdmins = () =>
+  apiCall<ApiAdminUser[]>('/admin/admins', { headers: getAuthHeader() });
+
+export const adminCreateAdmin = (data: {
+  email: string;
+  name: string;
+  role: AdminRole;
+  password: string;
+  password_confirmation?: string;
+  active?: boolean;
+}) =>
+  apiCall<ApiAdminUser>('/admin/admins', {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminUpdateAdmin = (
+  id: number,
+  data: Partial<{
+    email: string;
+    name: string;
+    role: AdminRole;
+    active: boolean;
+    password: string;
+    password_confirmation: string;
+  }>
+) =>
+  apiCall<ApiAdminUser>(`/admin/admins/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
+export const adminDeactivateAdmin = (id: number) =>
+  apiCall<{ message: string }>(`/admin/admins/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader(),
+  });
+
 export const adminCancelBooking = (id: number) =>
   apiCall<any>(`/admin/bookings/${id}/cancel`, {
     method: 'PATCH',

@@ -18,6 +18,7 @@ const menuItems = [
   { path: '/admin/best-sellers', icon: Star, label: 'Best Sellers' },
   { path: '/admin/daily-specials', icon: Sparkles, label: 'Món ngon mỗi ngày' },
   { path: '/admin/bookings', icon: Calendar, label: 'Đặt bàn' },
+  { path: '/admin/staff', icon: Users, label: 'Nhân sự' },
   { path: '/admin/customers', icon: Users, label: 'Hội viên' },
   { path: '/admin/chatbot', icon: MessageCircle, label: 'Chatbot' },
   { path: '/admin/contacts', icon: Mail, label: 'Liên hệ' },
@@ -62,6 +63,34 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       setAdminUser(JSON.parse(user));
     }
   }, [navigate]);
+
+  const effectiveRole = (adminUser?.role === 'staff' ? 'receptionist' : adminUser?.role) || 'receptionist';
+  const filteredMenuItems = menuItems.filter((item) => {
+    const adminOnlyPaths = new Set([
+      '/admin/categories',
+      '/admin/menu-items',
+      '/admin/menu-images',
+      '/admin/best-sellers',
+      '/admin/daily-specials',
+      '/admin/rooms',
+      '/admin/chatbot'
+    ]);
+    const receptionistAllowed = new Set(['/admin/dashboard', '/admin/bookings']);
+
+    if (effectiveRole === 'receptionist') {
+      return receptionistAllowed.has(item.path);
+    }
+
+    if (effectiveRole === 'manager') {
+      // Manager: bookings + customers + contacts + staff
+      return !adminOnlyPaths.has(item.path);
+    }
+
+    // admin/super_admin: full
+    if (effectiveRole === 'admin' || effectiveRole === 'super_admin') return true;
+
+    return receptionistAllowed.has(item.path);
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
@@ -119,7 +148,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
 
         {/* Menu Items */}
         <nav className="flex-1 py-4 overflow-y-auto">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
