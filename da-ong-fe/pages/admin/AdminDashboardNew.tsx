@@ -9,7 +9,7 @@ import {
   adminUpdateRoomStatus,
   getRooms,
   adminGetBookings,
-  createBookingApi,
+  adminCreateBooking,
   getMenuItems,
   adminGetRooms
 } from '../../services/api';
@@ -120,18 +120,7 @@ const AdminDashboardNew: React.FC = () => {
         getRooms(selectedDate), // Pass date to API
         adminGetBookings({ date: selectedDate })
       ]);
-      
-      // Log for debugging
-      console.log(`[fetchRoomsByDate] Date: ${selectedDate}, Rooms:`, rooms?.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        booked_for_date: r.booked_for_date,
-        in_use: r.in_use,
-        status: r.status,
-        bookings_count: r.bookings?.length || 0,
-        bookings: r.bookings
-      })));
-      
+
       // Ensure rooms are fresh for the selected date - create new array to force re-render
       setRoomsByDate(rooms ? [...rooms] : []);
       setBookingsByDate(bookings ? [...bookings] : []);
@@ -241,7 +230,7 @@ const AdminDashboardNew: React.FC = () => {
         bookingData.room_id = parseInt(quickBookingForm.room_id);
       }
 
-      await createBookingApi(bookingData);
+      await adminCreateBooking(bookingData);
       alert('Đặt bàn thành công!');
       setShowQuickBooking(false);
       fetchDashboard();
@@ -524,18 +513,7 @@ const AdminDashboardNew: React.FC = () => {
                       // Force check booked_for_date from current state - ensure it's boolean
                       const bookedForDate = room.booked_for_date === true;
                       const bookings = Array.isArray(room.bookings) ? room.bookings : [];
-                      
-                      // Debug log for room 2
-                      if (room.id === 2) {
-                        console.log('[Room 2 Debug]', {
-                          booked_for_date: room.booked_for_date,
-                          bookedForDate,
-                          in_use: room.in_use,
-                          status: room.status,
-                          bookings_count: bookings.length
-                        });
-                      }
-                      
+
                       // Recalculate status based on fresh data - booked_for_date takes priority
                       const statusColor = bookedForDate ? 'bg-red-500' : getRoomStatusColor(room);
                       const statusText = bookedForDate ? 'Đã đặt' : getRoomStatusText(room);
