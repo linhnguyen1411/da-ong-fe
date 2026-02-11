@@ -507,6 +507,13 @@ export const adminGetBookingStats = () =>
 export const adminGetDashboard = () =>
   apiCall<any>('/admin/bookings/dashboard', { headers: getAuthHeader() });
 
+export const adminCreateBooking = (data: ApiBooking) =>
+  apiCall<any>('/admin/bookings', {
+    method: 'POST',
+    headers: getAuthHeader(),
+    body: JSON.stringify(data),
+  });
+
 export const adminConfirmBooking = (id: number) =>
   apiCall<any>(`/admin/bookings/${id}/confirm`, {
     method: 'PATCH',
