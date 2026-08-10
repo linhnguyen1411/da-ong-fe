@@ -10,12 +10,12 @@ const Footer: React.FC = () => {
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-white rounded-lg p-2 border-2 border-primary/30 shadow-md">
               <img 
-                src="/LOGO-DA-ONG.png" 
-                alt="ĐÁ & ONG" 
+                src="/logo.png" 
+                alt="Nhà Hàng Sân Vườn" 
                 className="h-16 w-auto object-contain"
               />
             </div>
-            <h3 className="text-white text-xl font-sans font-bold">ĐÁ & ONG</h3>
+            <h3 className="text-white text-xl font-sans font-bold">Nhà Hàng Sân Vườn</h3>
           </div>
           <p className="mb-4">Trải nghiệm ẩm thực đẳng cấp với không gian sang trọng và hương vị tuyệt hảo.</p>
         </div>
@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
           <h3 className="text-white text-lg font-bold mb-4">Mạng Xã Hội</h3>
           <div className="space-y-3">
             <a 
-              href="https://www.facebook.com/nhahangdavaong" 
+              href="https://www.facebook.com/nhahangsanvuondn/" 
               target="_blank" 
               rel="noreferrer" 
               className="flex items-center gap-3 hover:text-primary transition group"
@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
               <span>Facebook</span>
             </a>
             <a 
-              href="https://www.tiktok.com/@nhahangdavaong" 
+              href="https://www.tiktok.com/@nhahangsanvuon" 
               target="_blank" 
               rel="noreferrer" 
               className="flex items-center gap-3 hover:text-primary transition group"
@@ -84,7 +84,7 @@ const Footer: React.FC = () => {
         </div>
       </div>
       <div className="text-center pt-8 mt-8 border-t border-gray-800 text-sm">
-        © 2024 Đá & Ong. All rights reserved.
+        © {new Date().getFullYear()} Nhà Hàng Sân Vườn. All rights reserved.
       </div>
     </footer>
   );

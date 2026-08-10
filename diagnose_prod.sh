@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# prod diagnostic script for Da Ong app
+# prod diagnostic script for Nhà Hàng Sân Vườn app
 # Usage: sudo bash diagnose_prod.sh /path/to/app [PORT]
 APP_DIR=${1:-/var/www/daong}
 PORT=${2:-3000}

@@ -69,7 +69,7 @@ export const FloorPlanView: React.FC<FloorPlanViewProps> = ({
       
       {/* Title */}
       <text x="50" y="6" textAnchor="middle" className="text-[3px] font-bold fill-gray-700">
-        SƠ ĐỒ PHÒNG VIP - NHÀ HÀNG ĐÁ & ONG
+        SƠ ĐỒ PHÒNG VIP - NHÀ HÀNG SÂN VƯỜN
       </text>
       
       {/* Corridor/Hallway */}

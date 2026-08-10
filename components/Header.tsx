@@ -20,22 +20,20 @@ const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 w-full bg-dark/95 backdrop-blur-sm text-white z-50 border-b border-gray-800 shadow-lg h-20">
       <div className="container mx-auto px-4 h-full flex items-center justify-between relative">
-        {/* Logo: Đá (White) & Ong (Yellow/Primary) */}
         <Link to="/" className="flex items-center gap-2 relative z-10">
-          <div className="bg-white rounded-lg p-2 border-2 border-primary/30 shadow-md">
+          <div className="bg-white rounded-lg p-1.5 border-2 border-primary/30 shadow-md">
             <img 
-              src="/LOGO-DA-ONG.png" 
-              alt="ĐÁ & ONG" 
-              className="h-10 w-auto object-contain"
+              src="/logo.png" 
+              alt="Nhà Hàng Sân Vườn" 
+              className="h-12 w-auto object-contain"
               onError={(e) => {
-                // Fallback to text if image fails
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 const parent = target.parentElement?.parentElement;
                 if (parent) {
                   const textFallback = document.createElement('span');
-                  textFallback.className = 'text-2xl font-sans font-bold tracking-wider uppercase';
-                  textFallback.innerHTML = '<span class="text-white">ĐÁ</span> <span class="text-primary">& ONG</span>';
+                  textFallback.className = 'text-xl font-sans font-bold tracking-wider uppercase text-white';
+                  textFallback.textContent = 'Nhà Hàng Sân Vườn';
                   parent.appendChild(textFallback);
                 }
               }}

@@ -142,8 +142,8 @@ const AdminDashboard: React.FC = () => {
       <header className="bg-dark text-white shadow-lg">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-sans font-bold">
-              <span className="text-white">ĐÁ</span> <span className="text-primary">& ONG</span>
+            <h1 className="text-xl font-sans font-bold text-white">
+              Nhà Hàng Sân Vườn
               <span className="text-gray-400 text-sm ml-2">Admin</span>
             </h1>
           </div>

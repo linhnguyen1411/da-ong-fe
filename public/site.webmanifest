@@ -1,7 +1,7 @@
 {
-  "name": "Đá & Ong - Nhà Hàng",
-  "short_name": "Đá & Ong",
-  "description": "Đặt bàn nhà hàng Đá & Ong",
+  "name": "Nhà Hàng Sân Vườn",
+  "short_name": "Sân Vườn",
+  "description": "Đặt bàn Nhà Hàng Sân Vườn",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -19,4 +19,3 @@
   "display": "standalone",
   "start_url": "/"
 }
-

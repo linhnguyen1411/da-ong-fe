@@ -4,5 +4,4 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://nhahangdavaong.com/sitemap.xml
-
+Sitemap: https://nhahangsanvuon.com/sitemap.xml

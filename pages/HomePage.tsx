@@ -112,7 +112,7 @@ const HomePage: React.FC = () => {
              <div className="absolute inset-0 bg-black/60"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center text-white">
-          <span className="block text-primary text-xl md:text-2xl lg:text-3xl font-medium tracking-[0.2em] mb-6 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO ĐÁ & ONG</span>
+          <span className="block text-primary text-xl md:text-2xl lg:text-3xl font-medium tracking-[0.2em] mb-6 animate-fadeInUp uppercase drop-shadow-lg">WELCOME TO NHÀ HÀNG SÂN VƯỜN</span>
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-sans font-bold mb-8 leading-tight animate-fadeInUp drop-shadow-2xl" style={{animationDelay: '0.2s'}}>
             Thưởng Thức <br/> <span className="text-primary">Tinh Hoa</span> Ẩm Thực
           </h1>
@@ -226,8 +226,8 @@ const HomePage: React.FC = () => {
             >
               <div className="flex items-center justify-center p-4" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center' }}>
                 <img 
-                  src="/da-va-ong.svg?v=20260105" 
-                  alt="Sơ đồ nhà hàng Đá & Ong" 
+                  src="/floor-plan.svg?v=20260810" 
+                  alt="Sơ đồ Nhà Hàng Sân Vườn" 
                   className="w-full h-auto object-contain"
                   style={{ maxWidth: '100%' }}
                   onError={(e) => {

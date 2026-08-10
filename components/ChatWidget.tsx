@@ -14,7 +14,7 @@ export type ChatWidgetConfig = {
 const ChatWidget: React.FC<{ config?: ChatWidgetConfig }> = ({ config }) => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
-  const companyName = config?.companyName || 'Đá & Ong';
+  const companyName = config?.companyName || 'Nhà Hàng Sân Vườn';
   const greeting =
     config?.greeting ||
     `Dạ em là trợ lý của ${companyName}.\nAnh/chị cần em tư vấn món, đặt bàn hoặc check phòng trống không ạ?`;

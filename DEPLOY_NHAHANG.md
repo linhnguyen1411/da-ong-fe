@@ -1,4 +1,4 @@
-# 🚀 Deploy Nhà Hàng Da Ong lên VPS
+# 🚀 Deploy Nhà Hàng Sân Vườn lên VPS
 
 ## 1️⃣ Port sử dụng
 - Backend (Rails API): **3011**
@@ -20,7 +20,7 @@ chmod +x deploy_nhahang.sh
 ```
 server {
     listen 80;
-    server_name nhahangdavaong.com www.nhahangdavaong.com;
+    server_name nhahangsanvuon.com www.nhahangsanvuon.com;
 
     root /root/da-ong-fe/dist;
     index index.html;
@@ -45,8 +45,8 @@ nginx -t && systemctl reload nginx
 ```
 
 ## 5️⃣ Kiểm tra
-- Truy cập: https://nhahangdavaong.com
-- API: https://nhahangdavaong.com/api
+- Truy cập: https://nhahangsanvuon.com
+- API: https://nhahangsanvuon.com/api
 
 ## 6️⃣ Lưu ý
 - Không ảnh hưởng dự án chấm công (port 3001/5173)

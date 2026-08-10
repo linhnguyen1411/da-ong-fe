@@ -1,4 +1,4 @@
-// API Service for Đá & Ong Restaurant
+// API Service for Nhà Hàng Sân Vườn
 
 
 // Dev: dùng proxy Vite (/api -> backend:3000). Prod: dùng VITE_API_BASE_URL hoặc fallback
