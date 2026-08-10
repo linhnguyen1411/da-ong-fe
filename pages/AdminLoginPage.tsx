@@ -41,7 +41,7 @@ const AdminLoginPage: React.FC = () => {
             <img
               src="/logo.png"
               alt="Nhà Hàng Sân Vườn"
-              className="h-20 w-20 rounded-full object-cover bg-white shadow-md ring-1 ring-primary/40"
+              className="h-20 w-20 rounded-full object-contain bg-white p-0.5 shadow-md ring-1 ring-primary/40"
             />
             <h1 className="text-2xl font-sans font-bold text-white">Nhà Hàng Sân Vườn</h1>
           </div>

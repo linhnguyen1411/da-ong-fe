@@ -24,7 +24,7 @@ const Header: React.FC = () => {
           <img
             src="/logo.png"
             alt="Nhà Hàng Sân Vườn"
-            className="h-14 w-14 rounded-full object-cover bg-white shadow-md ring-1 ring-primary/40"
+            className="h-14 w-14 rounded-full object-contain bg-white p-0.5 shadow-md ring-1 ring-primary/40"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';

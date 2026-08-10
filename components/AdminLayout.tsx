@@ -124,7 +124,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
             <img
               src="/logo.png"
               alt="Nhà Hàng Sân Vườn"
-              className="h-10 w-10 rounded-full object-cover bg-white shadow-md ring-1 ring-primary/40"
+              className="h-10 w-10 rounded-full object-contain bg-white p-0.5 shadow-md ring-1 ring-primary/40"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
