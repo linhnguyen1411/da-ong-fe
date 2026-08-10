@@ -120,25 +120,23 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
       >
         {/* Logo */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-          <Link to="/admin/dashboard" className="flex items-center gap-2">
-            <div className="bg-white rounded-lg p-1.5 border-2 border-primary/30 shadow-md">
-              <img 
-                src="/logo.png" 
-                alt="Nhà Hàng Sân Vườn" 
-                className="h-8 w-auto object-contain"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const parent = target.parentElement?.parentElement;
-                  if (parent) {
-                    const textFallback = document.createElement('span');
-                    textFallback.className = 'text-sm font-sans font-bold text-white';
-                    textFallback.textContent = 'Nhà Hàng Sân Vườn';
-                    parent.appendChild(textFallback);
-                  }
-                }}
-              />
-            </div>
+          <Link to="/admin/dashboard" className="flex items-center shrink-0">
+            <img
+              src="/logo.png"
+              alt="Nhà Hàng Sân Vườn"
+              className="h-10 w-10 rounded-full object-cover bg-white shadow-md ring-1 ring-primary/40"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  const textFallback = document.createElement('span');
+                  textFallback.className = 'text-sm font-sans font-bold text-white';
+                  textFallback.textContent = 'Nhà Hàng Sân Vườn';
+                  parent.appendChild(textFallback);
+                }
+              }}
+            />
           </Link>
           <button
             onClick={handleToggleSidebar}

@@ -20,25 +20,23 @@ const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 w-full bg-dark/95 backdrop-blur-sm text-white z-50 border-b border-gray-800 shadow-lg h-20">
       <div className="container mx-auto px-4 h-full flex items-center justify-between relative">
-        <Link to="/" className="flex items-center gap-2 relative z-10">
-          <div className="bg-white rounded-lg p-1.5 border-2 border-primary/30 shadow-md">
-            <img 
-              src="/logo.png" 
-              alt="Nhà Hàng Sân Vườn" 
-              className="h-12 w-auto object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement?.parentElement;
-                if (parent) {
-                  const textFallback = document.createElement('span');
-                  textFallback.className = 'text-xl font-sans font-bold tracking-wider uppercase text-white';
-                  textFallback.textContent = 'Nhà Hàng Sân Vườn';
-                  parent.appendChild(textFallback);
-                }
-              }}
-            />
-          </div>
+        <Link to="/" className="flex items-center relative z-10 shrink-0">
+          <img
+            src="/logo.png"
+            alt="Nhà Hàng Sân Vườn"
+            className="h-14 w-14 rounded-full object-cover bg-white shadow-md ring-1 ring-primary/40"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                const textFallback = document.createElement('span');
+                textFallback.className = 'text-xl font-sans font-bold tracking-wider uppercase text-white';
+                textFallback.textContent = 'Nhà Hàng Sân Vườn';
+                parent.appendChild(textFallback);
+              }
+            }}
+          />
         </Link>
 
         {/* Desktop Nav - Absolutely Centered */}

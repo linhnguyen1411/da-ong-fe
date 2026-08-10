@@ -38,9 +38,11 @@ const AdminLoginPage: React.FC = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex flex-col items-center gap-3">
-            <div className="bg-white rounded-xl p-2 shadow-md">
-              <img src="/logo.png" alt="Nhà Hàng Sân Vườn" className="h-16 w-auto object-contain" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Nhà Hàng Sân Vườn"
+              className="h-20 w-20 rounded-full object-cover bg-white shadow-md ring-1 ring-primary/40"
+            />
             <h1 className="text-2xl font-sans font-bold text-white">Nhà Hàng Sân Vườn</h1>
           </div>
           <p className="text-gray-400 mt-2">Admin Dashboard</p>
