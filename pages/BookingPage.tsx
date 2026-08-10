@@ -786,7 +786,7 @@ const BookingPage: React.FC = () => {
 
               {/* Summary Card */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <h3 className="font-sans font-bold text-xl mb-4 text-center text-dark">THÔNG TIN ĐẶT BÀN</h3>
+                  <h3 className="font-serif font-bold text-xl mb-4 text-center text-dark">THÔNG TIN ĐẶT BÀN</h3>
                   <div className="space-y-3 text-sm border-b border-gray-200 pb-4 mb-4">
                       <div className="flex justify-between">
                           <span className="text-gray-600">Thời gian:</span>
@@ -818,7 +818,7 @@ const BookingPage: React.FC = () => {
                       apiMenuItems={apiMenuItems}
                   />
 
-                  <div className="pt-4 border-t border-gray-300 space-y-2">
+                  <div className="pt-4 border-t border-gray-300 space-y-4">
                       <div className="flex justify-between items-center">
                           <span className="font-bold text-lg text-dark">Tổng dự kiến:</span>
                           <div className="flex flex-col items-end">
@@ -841,6 +841,31 @@ const BookingPage: React.FC = () => {
                           </div>
                       </div>
                       <p className="text-xs text-gray-500 text-center">*Giá chưa bao gồm VAT và đồ uống phát sinh tại quán.</p>
+
+                      {/* Tổng tiền cọc và QR ngân hàng */}
+                      <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                          <div className="flex items-center justify-between mb-2">
+                              <span className="font-bold text-dark">Số tiền cần thanh toán cọc:</span>
+                              <span className="font-bold text-lg text-primary">
+                                  {(() => {
+                                      // Tổng cọc = Tiền phòng + 30% tổng món ăn
+                                      const roomPrice = booking.selectedRoom?.pricePerHour || 0;
+                                      const foodDeposit = Math.round(cartTotal * 0.3);
+                                      const deposit = roomPrice + foodDeposit;
+                                      return deposit.toLocaleString('vi-VN') + 'đ';
+                                  })()}
+                              </span>
+                          </div>
+                          <div className="flex flex-col items-center gap-2 mt-2">
+                              <img src="/images/qr-bank.jpg" alt="QR chuyển khoản" className="w-40 h-40 object-contain border rounded-lg" />
+                              <div className="text-center mt-2">
+                                  <div className="font-bold text-dark">Ngân hàng: <span className="text-primary">Sacombank</span></div>
+                                  <div className="font-bold text-dark">Số tài khoản: <span className="text-primary">0931783167</span></div>
+                                  <div className="text-dark">Chủ TK: <span className="font-semibold">TRẦN THỊ KIM DUNG</span></div>
+                              </div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2 text-center">Vui lòng chuyển khoản cọc để giữ chỗ. Ghi rõ họ tên và số điện thoại khi chuyển khoản.</p>
+                      </div>
                   </div>
               </div>
           </div>
@@ -958,7 +983,7 @@ const BookingPage: React.FC = () => {
                   )}
                   
                   <div className="p-6">
-                      <h3 className="text-2xl font-sans font-bold text-dark mb-2">{showRoomModal.name}</h3>
+                      <h3 className="text-2xl font-serif font-bold text-dark mb-2">{showRoomModal.name}</h3>
                       <p className="text-gray-600 mb-4">{showRoomModal.description}</p>
                       
                       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -1048,8 +1073,8 @@ const BookingPage: React.FC = () => {
                           <img src="/images/qr-bank.jpg" alt="QR chuyển khoản" className="w-48 h-48 object-contain border rounded-lg bg-white" />
                           <div className="text-center">
                               <div className="font-bold text-dark">Ngân hàng: <span className="text-primary">Sacombank</span></div>
-                              <div className="font-bold text-dark">STK: <span className="text-primary">0905777594</span></div>
-                              <div className="text-dark text-sm">Chủ TK: <span className="font-semibold">NGUYỄN PHAN HOÀNG LINH</span></div>
+                              <div className="font-bold text-dark">STK: <span className="text-primary">0931783167</span></div>
+                              <div className="text-dark text-sm">Chủ TK: <span className="font-semibold">TRẦN THỊ KIM DUNG</span></div>
                           </div>
                       </div>
 
